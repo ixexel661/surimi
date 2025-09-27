@@ -1,84 +1,120 @@
-## `@janis.me/starter`
+# Surimi 🍥
 
-Repo template for my repositories. Based on pnpm workspaces, and includes default setup for:
+TypeScript-based CSS query builder that uses scripts like:
 
-- [Github actions](https://github.com)
-- [PNPM catalogs](https://pnpm.io/catalogs)
-- [Testing (vitest/playwright)](https://vitest.dev/)
-- [Formatting (Prettier)](https://prettier.io/)
-- [Linting (ts-eslint)](https://typescript-eslint.io/)
-- [Typescript](https://www.typescriptlang.org/)
-- [Dependency management (taze)](https://github.com/antfu-collective/taze)
-
-By default, the following commands are available across the repo:
-
-- `pnpm deps` for updating dependencies with [Taze](https://github.com/antfu-collective/taze)
-- `pnpm format` to format all packages with prettier
-- `pnpm lint` for linting all packages (respects each packages overrides)
-- `pnpm test` to run all tests using `vitest`.
-
-## Github
-
-There are two workflows defined by default. First, when you open PRs or push to the branches `main` or `development`, all unit tests will run. Secondly, when pushing tags starting with `v` and a semantic version, all packages will be published (if configured and not private), and a changelog will be generated that's put into a new github release.
-
-For this to work, you need to set a `NPM_TOKEN` in your github env. The publish workflow uses a github environment called `propd`, but you can of course change that.
-
-## Testing
-
-The repo defines a default vitest workspace. This allows you to add test to every package without having to setup vitest again and again. It just works. The testing setup will look for `*.unit.test.ts` and `*.browser.test.ts` files and run them with the respective runner.
-
-## Formatting
-
-There is just a single prettier config defined at top-level. If you need to add exceptions/rules/plugins, add it there
-
-## Linting
-
-The linter config is defined in the `linter-config` package. This defines a `base-config` that can be used to extend others. For example, it already defines a `reactConfig`, that extends the default with some react-specific rules. The `linter-config` package also exports `eslint` and `tseslint` so you can easily override rules in each package.
-
-For example:
-
-```ts
-import { reactConfig, tseslint, type ConfigArray } from '@janis.me/linter-config';
-
-const customConfig: ConfigArray = tseslint.config(...reactConfig, {
-  rules: {
-    'import/no-unresolved': [
-      'error',
-      // or whatever.
-    ],
-  },
-});
-
-export default customConfig;
+```typescript
+select('.container').style({ display: 'flex' });
+select('.container').media('(min-width: 600px)').style({ flexDirection: 'row' });
 ```
 
-When running `pnpm lint`, it respects these overrides and will lint all packages using their own config. Thus, you should add a new `eslint.config.ts` file to each package. It can be as simple as
+to generate CSS files with **zero runtime overhead** - CSS generation happens at build time.
 
-```ts
-import { baseConfig } from '@janis.me/linter-config';
+## Features & Roadmap
 
-export default baseConfig;
-```
+### Phase 1: Core Foundation 🎯
 
-## Typescript
+- [ ] **Basic Selector & Style Application**
+  - [ ] `select('.class')`, `select('#id')`, `select('element')` - Basic CSS selectors
+  - [ ] `.style({ property: 'value' })` - Apply CSS properties with full TypeScript validation
+  - [ ] Type-safe CSS properties using `csstype` library
+  - [ ] CSS output generation using PostCSS AST
 
-The typescript config is exported from the `typescript-config` package. It has a `base` config and one for `react`.
+- [ ] **Basic Pseudo-classes**
+  - [ ] `.hover()` - `:hover` pseudo-class
+  - [ ] `.focus()` - `:focus` pseudo-class
+  - [ ] `.active()` - `:active` pseudo-class
+  - [ ] `.disabled()` - `:disabled` pseudo-class
 
-In both cases, you can extend those by creating a tsconfig file in one of the sub-packages and putting
+- [ ] **Basic Pseudo-elements**
+  - [ ] `.before()` - `::before` pseudo-element
+  - [ ] `.after()` - `::after` pseudo-element
 
-```json
-{
-  "extends": "@janis.me/typescript-config/base.json",
-  "compilerOptions": {
-    "types": ["node"]
-  },
-  "include": ["*.ts"]
-}
-```
+- [ ] **Simple Media Queries**
+  - [ ] `.media('(min-width: 768px)')` - Basic media query support
 
-or whatever you need.
+- [ ] **Basic Selector Relationships**
+  - [ ] `.child('selector')` - Direct child combinator (`>`)
+  - [ ] `.descendant('selector')` - Descendant combinator (space)
 
-## Dependency management
+### Phase 2: Enhanced Selectors 🔧
 
-You can run `pnpm deps` to automatically update all your dependencies. run `pnpm deps major` for major upgrades.
-This works with pnpm catalogs, sub-packages etc.
+- [ ] **Complex Selector Combinations**
+  - [ ] `.and('.class')` - Multiple class selector (`.btn.primary`)
+  - [ ] `.not('.class')` - Negation pseudo-class (`:not()`)
+  - [ ] `.adjacent('selector')` - Adjacent sibling combinator (`+`)
+  - [ ] `.sibling('selector')` - General sibling combinator (`~`)
+
+- [ ] **Attribute Selectors**
+  - [ ] `.attr('name', 'value')` - Exact attribute match (`[attr="value"]`)
+  - [ ] `.attr('name', 'value', 'starts')` - Starts with (`[attr^="value"]`)
+  - [ ] `.attr('name', 'value', 'ends')` - Ends with (`[attr$="value"]`)
+  - [ ] `.attr('name', 'value', 'contains')` - Contains (`[attr*="value"]`)
+
+- [ ] **Advanced Pseudo-selectors**
+  - [ ] `.nthChild(n)` - `:nth-child(n)` selector
+  - [ ] `.nthChild('odd'|'even')` - `:nth-child(odd/even)` selector
+  - [ ] `.firstChild()` - `:first-child` selector
+  - [ ] `.lastChild()` - `:last-child` selector
+  - [ ] `.nthOfType(n)` - `:nth-of-type(n)` selector
+
+- [ ] **Enhanced Navigation**
+  - [ ] `.parent()` - Navigate back to parent selector
+  - [ ] `.root()` - Navigate back to root selector
+  - [ ] Complex nesting with proper CSS generation
+
+### Phase 3: Advanced Features 🚀
+
+- [ ] **CSS Custom Properties (Variables)**
+  - [ ] `property('--name', 'default-value')` - Define CSS custom properties
+  - [ ] Use properties in `.style()` calls with TypeScript validation
+  - [ ] `.define({ [property]: 'value' })` - Define property values in scope
+
+- [ ] **Mixins & Reusable Styles**
+  - [ ] `mixin({ styles })` - Define reusable style objects
+  - [ ] `.apply(mixinName)` - Apply mixin to selector
+  - [ ] Mixin composition and extension
+
+- [ ] **Advanced Media Features**
+  - [ ] Complex media query combinations
+  - [ ] Media query nesting and scoping
+  - [ ] Print media support
+  - [ ] Container queries (future CSS feature)
+
+- [ ] **Keyframe Animations**
+  - [ ] `keyframes('name', { stages })` - Define keyframe animations
+  - [ ] Reference keyframes in animation properties
+  - [ ] Animation composition and timing
+
+- [ ] **Advanced Selector Features**
+  - [ ] Custom pseudo-class support
+  - [ ] Complex selector parsing and validation
+  - [ ] Selector specificity calculation
+  - [ ] CSS selector optimization
+
+### Phase 4: Build System Integration 🔄
+
+- [ ] **Compilation & Optimization**
+  - [ ] CSS deduplication and minification
+  - [ ] Dead code elimination for unused styles
+  - [ ] Source map generation for debugging
+  - [ ] CSS chunking and code splitting
+
+- [ ] **Framework Integration**
+  - [ ] Vite plugin for seamless development
+  - [ ] Webpack loader support
+  - [ ] Next.js integration
+  - [ ] Build-time CSS extraction
+
+- [ ] **Developer Experience**
+  - [ ] VS Code extension for syntax highlighting
+  - [ ] Runtime development warnings
+  - [ ] CSS preview and inspection tools
+  - [ ] Performance profiling and optimization hints
+
+## Design Principles
+
+- **Zero Runtime Overhead**: All CSS generation happens at build time
+- **Type Safety**: Full TypeScript validation for CSS properties and values
+- **Ergonomic API**: Fluent, chainable interface inspired by SQL builders
+- **Standards Compliant**: Generates valid, optimized CSS
+- **Extensible**: Plugin architecture for custom functionality

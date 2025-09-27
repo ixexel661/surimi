@@ -1,6 +1,6 @@
 {
-  "name": "@janis.me/starter-example",
-  "version": "0.0.0",
+  "name": "surimi",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "imports": {
@@ -14,6 +14,10 @@
   "main": "src/index.ts",
   "scripts": {
     "format": "prettier . --write"
+  },
+  "dependencies": {
+    "csstype": "catalog:prod",
+    "postcss": "catalog:prod"
   },
   "devDependencies": {
     "@janis.me/linter-config": "workspace:*",
