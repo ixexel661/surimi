@@ -1,54 +1,38 @@
+/**
+ * Type definitions for Surimi CSS builder.
+ *
+ * Key architectural patterns:
+ * - Interface/Implementation separation: I* interfaces define contracts, classes provide implementation
+ * - Immutable builder pattern: Each method returns new instance rather than mutating current one
+ * - Context-aware building: BuilderContext carries state through method chains
+ */
 import type * as CSS from 'csstype';
 
-/**
- * CSS Properties using csstype for full TypeScript validation
- */
 export type CSSProperties = CSS.Properties;
-
-/**
- * Core builder interface that all builders must implement
- */
-export interface Builder {
-  /**
-   * Generate the final CSS string
-   */
-  build(): string;
-}
-
-/**
- * Represents a CSS rule with selector and declarations
- */
-export interface CSSRule {
-  selector: string;
-  declarations: CSSProperties;
-  pseudoClasses: string[];
-  pseudoElements: string[];
-  mediaQuery?: string;
-}
 
 /**
  * Base selector builder interface with core functionality
  */
-export interface SelectorBuilder extends Builder {
+export interface ISelectorBuilder {
   // Style application
-  style(properties: CSSProperties): SelectorBuilder;
+  style(properties: CSSProperties): ISelectorBuilder;
 
   // Pseudo-classes
-  hover(): SelectorBuilder;
-  focus(): SelectorBuilder;
-  active(): SelectorBuilder;
-  disabled(): SelectorBuilder;
+  hover(): ISelectorBuilder;
+  focus(): ISelectorBuilder;
+  active(): ISelectorBuilder;
+  disabled(): ISelectorBuilder;
 
   // Pseudo-elements
-  before(): SelectorBuilder;
-  after(): SelectorBuilder;
+  before(): ISelectorBuilder;
+  after(): ISelectorBuilder;
 
   // Media queries
-  media(query: string): MediaQueryBuilder;
+  media(query: string): IMediaQueryBuilder;
 
   // Selector relationships
-  child(selector: string): SelectorBuilder;
-  descendant(selector: string): SelectorBuilder;
+  child(selector: string): ISelectorBuilder;
+  descendant(selector: string): ISelectorBuilder;
 
   // Future: Navigation (for Phase 3)
   // parent(): SelectorBuilder | null;
@@ -64,23 +48,23 @@ export interface SelectorBuilder extends Builder {
 /**
  * Media query builder with specialized media functionality
  */
-export interface MediaQueryBuilder extends Builder {
+export interface IMediaQueryBuilder {
   // Apply styles within media query context
-  style(properties: CSSProperties): MediaQueryBuilder;
+  style(properties: CSSProperties): IMediaQueryBuilder;
 
   // Pseudo-classes within media queries
-  hover(): MediaQueryBuilder;
-  focus(): MediaQueryBuilder;
-  active(): MediaQueryBuilder;
-  disabled(): MediaQueryBuilder;
+  hover(): IMediaQueryBuilder;
+  focus(): IMediaQueryBuilder;
+  active(): IMediaQueryBuilder;
+  disabled(): IMediaQueryBuilder;
 
   // Pseudo-elements within media queries
-  before(): MediaQueryBuilder;
-  after(): MediaQueryBuilder;
+  before(): IMediaQueryBuilder;
+  after(): IMediaQueryBuilder;
 
   // Selector relationships within media queries
-  child(selector: string): MediaQueryBuilder;
-  descendant(selector: string): MediaQueryBuilder;
+  child(selector: string): IMediaQueryBuilder;
+  descendant(selector: string): IMediaQueryBuilder;
 
   // Future: Chained media queries (for Phase 3)
   // and(query: string): MediaQueryBuilder;
@@ -94,10 +78,10 @@ export interface BuilderContext {
   baseSelector: string;
   pseudoClasses: string[];
   pseudoElements: string[];
-  mediaQuery?: string;
+  mediaQuery?: string | undefined;
 }
 
 /**
  * Select function signature supporting multiple selector formats
  */
-export type SelectFunction = (...selectors: string[]) => SelectorBuilder;
+export type SelectFunction = (...selectors: string[]) => ISelectorBuilder;

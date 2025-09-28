@@ -1,20 +1,23 @@
-import {
-  buildCompleteSelector,
-  buildSelectorWithRelationship,
-  generateCSS,
-  generateRule,
-  normalizeSelectors,
-} from './css-generator';
-import type { BuilderContext, CSSProperties, CSSRule, MediaQueryBuilder, SelectorBuilder } from './types';
+import postcss from 'postcss';
+
+import { buildSelectorWithRelationship, combineSelector, createDeclarations } from './css-generator';
+import type { BuilderContext, CSSProperties, IMediaQueryBuilder, ISelectorBuilder } from './types';
 
 /**
- * Core selector builder implementation
+ * SelectorBuilder manages CSS rule generation using PostCSS AST manipulation.
+ *
+ * Key architectural decisions:
+ * - Immutable context: Each method returns a new builder instance with updated context
+ * - Shared PostCSS root: All selectors contribute to the same stylesheet AST
+ * - Context inheritance: Pseudo-classes/elements are preserved until "consumed" by .style()
+ * - Method chaining: .hover().media().style() preserves hover, .hover().style().media() resets to base
  */
-export class SelectorBuilderImpl implements SelectorBuilder {
-  private rules: CSSRule[] = [];
+export class SelectorBuilder implements ISelectorBuilder {
+  private root: postcss.Root;
   private context: BuilderContext;
 
-  constructor(baseSelector: string, context?: Partial<BuilderContext>) {
+  constructor(baseSelector: string, root: postcss.Root, context?: Partial<BuilderContext>) {
+    this.root = root;
     this.context = {
       baseSelector,
       pseudoClasses: [],
@@ -23,84 +26,116 @@ export class SelectorBuilderImpl implements SelectorBuilder {
     };
   }
 
-  /**
-   * Apply CSS properties to the current selector
-   */
-  style(properties: CSSProperties): SelectorBuilder {
-    const rule: CSSRule = {
-      selector: this.context.baseSelector,
-      declarations: properties,
-      pseudoClasses: [...this.context.pseudoClasses],
-      pseudoElements: [...this.context.pseudoElements],
-      ...(this.context.mediaQuery && { mediaQuery: this.context.mediaQuery }),
-    };
+  style(properties: CSSProperties): ISelectorBuilder {
+    const rule = this.getOrCreateRule();
+    const declarations = createDeclarations(properties);
+    declarations.forEach(decl => rule.append(decl));
 
-    this.rules.push(rule);
-    return this;
+    // Clear pseudo-classes/elements after consuming them for this rule
+    return new SelectorBuilder(this.context.baseSelector, this.root, {
+      baseSelector: this.context.baseSelector,
+      pseudoClasses: [],
+      pseudoElements: [],
+      mediaQuery: this.context.mediaQuery,
+    });
   }
 
   /**
-   * Add :hover pseudo-class
+   * Get or create a PostCSS rule for the current context
    */
-  hover(): SelectorBuilder {
+  private getOrCreateRule(): postcss.Rule {
+    const completeSelector = combineSelector(
+      this.context.baseSelector,
+      this.context.pseudoClasses,
+      this.context.pseudoElements,
+    );
+
+    // Check if rule already exists in the root or media query
+    if (this.context.mediaQuery) {
+      return this.getOrCreateMediaRule(completeSelector);
+    }
+
+    // Look for existing rule with this selector
+    let existingRule = this.root.nodes.find(node => node.type === 'rule' && node.selector === completeSelector) as
+      | postcss.Rule
+      | undefined;
+
+    if (!existingRule) {
+      existingRule = postcss.rule({ selector: completeSelector });
+      this.root.append(existingRule);
+    }
+
+    return existingRule;
+  }
+
+  /**
+   * Get or create a media query rule
+   */
+  private getOrCreateMediaRule(selector: string): postcss.Rule {
+    if (!this.context.mediaQuery) {
+      throw new Error('Media query context is required');
+    }
+
+    // Find or create media query
+    let mediaRule = this.root.nodes.find(
+      node => node.type === 'atrule' && node.name === 'media' && node.params === this.context.mediaQuery,
+    ) as postcss.AtRule | undefined;
+
+    if (!mediaRule) {
+      mediaRule = postcss.atRule({
+        name: 'media',
+        params: this.context.mediaQuery,
+      });
+      this.root.append(mediaRule);
+    }
+
+    // Find or create rule inside media query
+    let rule = mediaRule.nodes?.find(node => node.type === 'rule' && node.selector === selector) as
+      | postcss.Rule
+      | undefined;
+
+    if (!rule) {
+      rule = postcss.rule({ selector });
+      mediaRule.append(rule);
+    }
+
+    return rule;
+  }
+
+  hover(): ISelectorBuilder {
     return this.addPseudoClass('hover');
   }
 
-  /**
-   * Add :focus pseudo-class
-   */
-  focus(): SelectorBuilder {
+  focus(): ISelectorBuilder {
     return this.addPseudoClass('focus');
   }
 
-  /**
-   * Add :active pseudo-class
-   */
-  active(): SelectorBuilder {
+  active(): ISelectorBuilder {
     return this.addPseudoClass('active');
   }
 
-  /**
-   * Add :disabled pseudo-class
-   */
-  disabled(): SelectorBuilder {
+  disabled(): ISelectorBuilder {
     return this.addPseudoClass('disabled');
   }
 
-  /**
-   * Add ::before pseudo-element
-   */
-  before(): SelectorBuilder {
+  before(): ISelectorBuilder {
     return this.addPseudoElement('before');
   }
 
-  /**
-   * Add ::after pseudo-element
-   */
-  after(): SelectorBuilder {
+  after(): ISelectorBuilder {
     return this.addPseudoElement('after');
   }
 
-  /**
-   * Create media query context
-   */
-  media(query: string): MediaQueryBuilder {
-    return new MediaQueryBuilderImpl(
-      this.context.baseSelector,
-      {
-        ...this.context,
-        mediaQuery: query,
-      },
-      this.rules,
-    );
+  media(query: string): IMediaQueryBuilder {
+    return new MediaQueryBuilder(this.context.baseSelector, this.root, {
+      ...this.context,
+      mediaQuery: query,
+    });
   }
 
-  /**
-   * Add direct child selector
-   */
-  child(selector: string): SelectorBuilder {
+  child(selector: string): ISelectorBuilder {
     // Apply current pseudo-classes and pseudo-elements to the base selector
-    const currentBaseSelector = buildCompleteSelector(
+    const currentBaseSelector = combineSelector(
       this.context.baseSelector,
       this.context.pseudoClasses,
       this.context.pseudoElements,
@@ -117,16 +152,10 @@ export class SelectorBuilderImpl implements SelectorBuilder {
       contextUpdate.mediaQuery = this.context.mediaQuery;
     }
 
-    const newBuilder = new SelectorBuilderImpl(newSelector, contextUpdate);
-    // Share the rules array so all operations contribute to the same collection
-    newBuilder.rules = this.rules;
-    return newBuilder;
+    return new SelectorBuilder(newSelector, this.root, contextUpdate);
   }
 
-  /**
-   * Add descendant selector
-   */
-  descendant(selector: string): SelectorBuilder {
+  descendant(selector: string): ISelectorBuilder {
     const newSelector = buildSelectorWithRelationship(this.context.baseSelector, 'descendant', selector);
 
     const contextUpdate: Partial<BuilderContext> = {
@@ -138,211 +167,186 @@ export class SelectorBuilderImpl implements SelectorBuilder {
       contextUpdate.mediaQuery = this.context.mediaQuery;
     }
 
-    const newBuilder = new SelectorBuilderImpl(newSelector, contextUpdate);
-    // Share the rules array so all operations contribute to the same collection
-    newBuilder.rules = this.rules;
-    return newBuilder;
+    return new SelectorBuilder(newSelector, this.root, contextUpdate);
   }
 
-  /**
-   * Generate final CSS output
-   */
-  build(): string {
-    if (this.rules.length === 0) {
-      return '';
-    }
-
-    if (this.rules.length === 1) {
-      const firstRule = this.rules[0];
-      if (firstRule) {
-        return generateRule(firstRule);
-      }
-    }
-
-    return generateCSS(this.rules);
-  }
-
-  /**
-   * Helper method to add pseudo-class
-   */
-  private addPseudoClass(pseudoClass: string): SelectorBuilder {
+  private addPseudoClass(pseudoClass: string): ISelectorBuilder {
     const newContext = {
       ...this.context,
       pseudoClasses: [...this.context.pseudoClasses, pseudoClass],
     };
 
-    const newBuilder = new SelectorBuilderImpl(this.context.baseSelector, newContext);
-    // Share the rules array so all operations contribute to the same collection
-    newBuilder.rules = this.rules;
-    return newBuilder;
+    return new SelectorBuilder(this.context.baseSelector, this.root, newContext);
   }
 
-  /**
-   * Helper method to add pseudo-element
-   */
-  private addPseudoElement(pseudoElement: string): SelectorBuilder {
+  private addPseudoElement(pseudoElement: string): ISelectorBuilder {
     const newContext = {
       ...this.context,
       pseudoElements: [...this.context.pseudoElements, pseudoElement],
     };
 
-    const newBuilder = new SelectorBuilderImpl(this.context.baseSelector, newContext);
-    // Share the rules array so all operations contribute to the same collection
-    newBuilder.rules = this.rules;
-    return newBuilder;
+    return new SelectorBuilder(this.context.baseSelector, this.root, newContext);
   }
 }
 
 /**
- * Media query builder implementation
+ * MediaQueryBuilder handles CSS generation within @media rules.
+ * Shares the same PostCSS root and context inheritance patterns as SelectorBuilder.
  */
-export class MediaQueryBuilderImpl implements MediaQueryBuilder {
-  private rules: CSSRule[] = [];
+export class MediaQueryBuilder implements IMediaQueryBuilder {
+  private root: postcss.Root;
   private context: BuilderContext;
 
-  constructor(_baseSelector: string, context: BuilderContext, existingRules: CSSRule[] = []) {
+  constructor(_baseSelector: string, root: postcss.Root, context: BuilderContext) {
+    this.root = root;
     this.context = context;
-    this.rules = existingRules; // Share the same rules array reference
   }
 
   /**
    * Apply CSS properties within media query context
    */
-  style(properties: CSSProperties): MediaQueryBuilder {
-    const rule: CSSRule = {
-      selector: this.context.baseSelector,
-      declarations: properties,
-      pseudoClasses: [...this.context.pseudoClasses],
-      pseudoElements: [...this.context.pseudoElements],
-      ...(this.context.mediaQuery && { mediaQuery: this.context.mediaQuery }),
-    };
+  style(properties: CSSProperties): IMediaQueryBuilder {
+    // Get or create rule in the shared PostCSS root (inside media query)
+    const rule = this.getOrCreateMediaRule();
 
-    this.rules.push(rule);
+    // Add declarations to existing rule
+    const declarations = createDeclarations(properties);
+    declarations.forEach(decl => rule.append(decl));
+
     return this;
+  }
+
+  /**
+   * Get or create a media query rule
+   */
+  private getOrCreateMediaRule(): postcss.Rule {
+    if (!this.context.mediaQuery) {
+      throw new Error('Media query context is required');
+    }
+
+    const completeSelector = combineSelector(
+      this.context.baseSelector,
+      this.context.pseudoClasses,
+      this.context.pseudoElements,
+    );
+
+    // Find or create media query
+    let mediaRule = this.root.nodes.find(
+      node => node.type === 'atrule' && node.name === 'media' && node.params === this.context.mediaQuery,
+    ) as postcss.AtRule | undefined;
+
+    if (!mediaRule) {
+      mediaRule = postcss.atRule({
+        name: 'media',
+        params: this.context.mediaQuery,
+      });
+      this.root.append(mediaRule);
+    }
+
+    // Find or create rule inside media query
+    let rule = mediaRule.nodes?.find(node => node.type === 'rule' && node.selector === completeSelector) as
+      | postcss.Rule
+      | undefined;
+
+    if (!rule) {
+      rule = postcss.rule({ selector: completeSelector });
+      mediaRule.append(rule);
+    }
+
+    return rule;
   }
 
   /**
    * Add :hover pseudo-class within media query
    */
-  hover(): MediaQueryBuilder {
+  hover(): IMediaQueryBuilder {
     return this.addPseudoClass('hover');
   }
 
   /**
    * Add :focus pseudo-class within media query
    */
-  focus(): MediaQueryBuilder {
+  focus(): IMediaQueryBuilder {
     return this.addPseudoClass('focus');
   }
 
   /**
    * Add :active pseudo-class within media query
    */
-  active(): MediaQueryBuilder {
+  active(): IMediaQueryBuilder {
     return this.addPseudoClass('active');
   }
 
   /**
    * Add :disabled pseudo-class within media query
    */
-  disabled(): MediaQueryBuilder {
+  disabled(): IMediaQueryBuilder {
     return this.addPseudoClass('disabled');
   }
 
   /**
    * Add ::before pseudo-element within media query
    */
-  before(): MediaQueryBuilder {
+  before(): IMediaQueryBuilder {
     return this.addPseudoElement('before');
   }
 
   /**
    * Add ::after pseudo-element within media query
    */
-  after(): MediaQueryBuilder {
+  after(): IMediaQueryBuilder {
     return this.addPseudoElement('after');
   }
 
   /**
    * Add direct child selector within media query
    */
-  child(selector: string): MediaQueryBuilder {
+  child(selector: string): IMediaQueryBuilder {
     const newSelector = buildSelectorWithRelationship(this.context.baseSelector, 'child', selector);
 
-    return new MediaQueryBuilderImpl(
-      newSelector,
-      {
-        ...this.context,
-        baseSelector: newSelector,
-        pseudoClasses: [],
-        pseudoElements: [],
-      },
-      this.rules,
-    );
+    return new MediaQueryBuilder(newSelector, this.root, {
+      ...this.context,
+      baseSelector: newSelector,
+      pseudoClasses: [],
+      pseudoElements: [],
+    });
   }
 
   /**
    * Add descendant selector within media query
    */
-  descendant(selector: string): MediaQueryBuilder {
+  descendant(selector: string): IMediaQueryBuilder {
     const newSelector = buildSelectorWithRelationship(this.context.baseSelector, 'descendant', selector);
 
-    return new MediaQueryBuilderImpl(
-      newSelector,
-      {
-        ...this.context,
-        baseSelector: newSelector,
-        pseudoClasses: [],
-        pseudoElements: [],
-      },
-      this.rules,
-    );
-  }
-
-  /**
-   * Generate final CSS output
-   */
-  build(): string {
-    if (this.rules.length === 0) {
-      return '';
-    }
-
-    if (this.rules.length === 1 && this.rules[0]) {
-      return generateRule(this.rules[0]);
-    }
-
-    return generateCSS(this.rules);
+    return new MediaQueryBuilder(newSelector, this.root, {
+      ...this.context,
+      baseSelector: newSelector,
+      pseudoClasses: [],
+      pseudoElements: [],
+    });
   }
 
   /**
    * Helper method to add pseudo-class within media query
    */
-  private addPseudoClass(pseudoClass: string): MediaQueryBuilder {
+  private addPseudoClass(pseudoClass: string): IMediaQueryBuilder {
     const newContext = {
       ...this.context,
       pseudoClasses: [...this.context.pseudoClasses, pseudoClass],
     };
 
-    return new MediaQueryBuilderImpl(this.context.baseSelector, newContext, this.rules);
+    return new MediaQueryBuilder(this.context.baseSelector, this.root, newContext);
   }
 
   /**
    * Helper method to add pseudo-element within media query
    */
-  private addPseudoElement(pseudoElement: string): MediaQueryBuilder {
+  private addPseudoElement(pseudoElement: string): IMediaQueryBuilder {
     const newContext = {
       ...this.context,
       pseudoElements: [...this.context.pseudoElements, pseudoElement],
     };
 
-    return new MediaQueryBuilderImpl(this.context.baseSelector, newContext, this.rules);
+    return new MediaQueryBuilder(this.context.baseSelector, this.root, newContext);
   }
-}
-
-/**
- * Main select function that creates a selector builder
- */
-export function select(...selectors: string[]): SelectorBuilder {
-  const normalizedSelector = normalizeSelectors(...selectors);
-  return new SelectorBuilderImpl(normalizedSelector);
 }

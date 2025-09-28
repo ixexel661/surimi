@@ -1,1 +1,1 @@
-export * from '#builder';
+export { Surimi as default } from '#stylesheet';

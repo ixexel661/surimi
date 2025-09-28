@@ -1,0 +1,24 @@
+{
+  "name": "surimi-example-basic",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#*": [
+      "./src/*",
+      "./src/*.ts",
+      "./src/*.tsx",
+      "./src/*/index.ts"
+    ]
+  },
+  "main": "src/index.ts",
+  "scripts": {
+    "format": "prettier . --write"
+  },
+  "dependencies": {
+    "surimi": "workspace:*"
+  },
+  "devDependencies": {
+    "@janis.me/linter-config": "workspace:*",
+    "@janis.me/typescript-config": "workspace:*"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "surimi",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "imports": {
     "#*": [
@@ -11,8 +11,21 @@
       "./src/*/index.ts"
     ]
   },
-  "main": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "format": "prettier . --write"
   },
   "dependencies": {
@@ -21,6 +34,7 @@
   },
   "devDependencies": {
     "@janis.me/linter-config": "workspace:*",
-    "@janis.me/typescript-config": "workspace:*"
+    "@janis.me/typescript-config": "workspace:*",
+    "tsdown": "^0.15.5"
   }
 }
