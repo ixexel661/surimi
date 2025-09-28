@@ -9,6 +9,8 @@
   "author": "Janis Jansen",
   "type": "module",
   "scripts": {
+    "build": "pnpm -r build",
+    "build:watch": "pnpm -r --workspace-concurrency Infinity build:watch",
     "deps": "pnpm taze",
     "format": "prettier --write .",
     "lint": "eslint --flag unstable_config_lookup_from_file .",
@@ -20,6 +22,7 @@
     "@janis.me/typescript-config": "workspace:*",
     "@playwright/test": "catalog:test",
     "@vitest/browser": "catalog:test",
+    "@vitest/ui": "catalog:test",
     "eslint": "catalog:lint",
     "jiti": "catalog:lint",
     "prettier": "catalog:format",

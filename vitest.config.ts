@@ -6,8 +6,14 @@ export default defineConfig({
     projects: [
       {
         test: {
-          name: 'unit',
-          include: ['./packages/*/src/**/*.spec.ts', './packages/*/test/**/*.spec.ts'],
+          name: 'surimi',
+          include: ['./packages/surimi/test/**/*.spec.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'vite-plugin-surimi',
+          include: ['./packages/vite-plugin-surimi/test/**/*.spec.ts'],
         },
       },
     ],

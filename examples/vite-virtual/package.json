@@ -13,7 +13,7 @@
     "@janis.me/typescript-config": "workspace:*",
     "surimi": "workspace:*",
     "vite": "catalog:build",
-    "vite-bundle-analyzer": "^1.2.3",
+    "vite-bundle-analyzer": "catalog:utils",
     "vite-plugin-surimi": "workspace:*"
   }
 }

@@ -1,23 +1,35 @@
 export interface SurimiPluginOptions {
-  /** Files to include for scanning */
+  /**
+   * Files to include for scanning. Only used in 'virtual' mode.
+   * @default ['**\/*.css.{ts,js}']
+   */
   include?: string | string[];
 
-  /** Files to exclude from scanning */
+  /**
+   * Files to exclude from scanning. Only used in 'virtual' mode.
+   * @default ['node_modules/**', '**\/*.d.ts']
+   */
   exclude?: string | string[];
 
-  /** Enable development features like HMR */
-  devFeatures?: boolean;
-
-  /** Automatically externalize surimi and postcss in build mode (default: true) */
+  /**
+   * Automatically externalize surimi and postcss in build mode (default: true)
+   * This makes sure to not include any useless code in the final bundle.
+   * If using surimi in runtime node (to generate CSS on the client), needs to be disabled
+   */
   autoExternal?: boolean;
 
   /**
    * CSS processing mode:
-   * - 'auto': Automatically scan all files and replace surimi calls with CSS injection
-   * - 'manual': Only transform surimi files that are explicitly imported (recommended)
-   * - 'virtual': Generate virtual:surimi.css module from auto-discovered files
+   * - 'manual': Only transform surimi CSS files that are explicitly imported (default)
+   * - 'virtual': Generate virtual CSS module from auto-discovered surimi CSS files
    */
-  mode?: 'auto' | 'manual' | 'virtual';
+  mode?: 'manual' | 'virtual';
+
+  /**
+   * Virtual module name that needs to be imported to include all discovered CSS.
+   * @default 'virtual:surimi.css'
+   */
+  virtualModuleId?: string;
 }
 
 export interface ScanResult {

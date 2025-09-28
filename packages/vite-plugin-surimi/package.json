@@ -33,13 +33,11 @@
     "@rollup/pluginutils": "catalog:build",
     "chokidar": "catalog:build",
     "esbuild": "catalog:build",
-    "fast-glob": "catalog:build",
-    "fs-extra": "^11.3.2"
+    "fast-glob": "catalog:build"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
     "@types/node": "catalog:types",
-    "tsdown": "^0.15.5",
+    "tsdown": "catalog:build",
     "typescript": "catalog:build",
     "vite": "catalog:build"
   },

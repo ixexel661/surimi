@@ -1,4 +1,3 @@
-import { readFile } from 'fs/promises';
 import { pathToFileURL } from 'url';
 import { createFilter } from '@rollup/pluginutils';
 import fastGlob from 'fast-glob';
@@ -7,26 +6,21 @@ import { normalizePath } from 'vite';
 
 import type { SurimiPluginOptions } from './types.js';
 
-const VIRTUAL_MODULE_ID = 'virtual:surimi.css';
-const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID;
-
-function isSurimiFile(code: string): boolean {
-  return (
-    code.includes("from 'surimi'") ||
-    code.includes('from "surimi"') ||
-    code.includes('s.select(') ||
-    code.includes('surimi.')
-  );
+function isSurimiFile(filePath: string): boolean {
+  return /\.css\.(ts|js)$/.test(filePath);
 }
 
 export function surimiPlugin(options: SurimiPluginOptions = {}): Plugin {
   const {
-    include = ['src/**/*.{js,ts,jsx,tsx,vue,svelte}'],
+    include = ['**/*.css.{ts,js}'],
     exclude = ['node_modules/**', '**/*.d.ts'],
-    devFeatures = true,
     autoExternal = true,
     mode = 'manual',
+    virtualModuleId = 'virtual:surimi.css',
   } = options;
+
+  const VIRTUAL_MODULE_ID = virtualModuleId;
+  const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID;
 
   const filter = createFilter(include, exclude);
   let root: string;
@@ -84,22 +78,20 @@ export function surimiPlugin(options: SurimiPluginOptions = {}): Plugin {
       }
     },
 
-    async transform(code: string, id: string) {
+    async transform(_code: string, id: string) {
       const normalizedId = normalizePath(id);
 
-      // Only process files that contain surimi code
-      if (!isSurimiFile(code)) return null;
+      // Only process .css.ts/.css.js files in manual mode
+      if (mode !== 'manual' || !isSurimiFile(normalizedId)) return null;
 
-      // In all modes, we need to prevent surimi runtime execution during build
-      if (mode === 'manual' || mode === 'auto') {
-        // Extract CSS at build time
-        const css = await extractCssFromFile(id);
+      // Extract CSS at build time
+      const css = await extractCssFromFile(id);
 
-        if (css) {
-          // Replace the surimi file with just a CSS injection
-          // This eliminates the surimi runtime calls from the bundle
-          return {
-            code: `// CSS extracted from ${normalizedId} at build time
+      if (css) {
+        // Replace the surimi file with just a CSS injection
+        // This eliminates the surimi runtime calls from the bundle
+        return {
+          code: `// CSS extracted from ${normalizedId} at build time
 const css = ${JSON.stringify(css)};
 if (typeof document !== 'undefined') {
   const styleId = 'surimi-${id.replace(/[^a-zA-Z0-9]/g, '-')}';
@@ -110,22 +102,20 @@ if (typeof document !== 'undefined') {
     document.head.appendChild(style);
   }
 }`,
-            map: null,
-          };
-        }
-
-        // If no CSS was extracted, return empty module
-        return {
-          code: '// Surimi file processed at build time - no runtime needed',
           map: null,
         };
       }
 
-      return null;
+      // If no CSS was extracted, return empty module
+      return {
+        code: '// Surimi file processed at build time - no runtime needed',
+        map: null,
+      };
     },
 
     async handleHotUpdate({ file, server }: { file: string; server: ViteDevServer }) {
-      if (!devFeatures || !filter(file)) {
+      // Only handle HMR in virtual mode and for files that match our filter
+      if (mode !== 'virtual' || !filter(file)) {
         return;
       }
 
@@ -148,8 +138,8 @@ if (typeof document !== 'undefined') {
 }
 
 async function generateCSS(root: string, filter: (id: string) => boolean): Promise<string> {
-  // Find all files matching our patterns
-  const files = await fastGlob(['**/*.{js,ts,jsx,tsx}'], {
+  // Find all CSS files matching our patterns
+  const files = await fastGlob(['**/*.css.{ts,js}'], {
     cwd: root,
     absolute: true,
   });
@@ -159,14 +149,10 @@ async function generateCSS(root: string, filter: (id: string) => boolean): Promi
 
   for (const file of filteredFiles) {
     try {
-      const content = await readFile(file, 'utf-8');
-
-      // Check if file uses surimi
-      if (content.includes("from 'surimi'") || content.includes('from "surimi"') || content.includes('s.select(')) {
-        const css = await extractCssFromFile(file);
-        if (css) {
-          allCss += css + '\n';
-        }
+      // All .css.ts/.css.js files are considered surimi files
+      const css = await extractCssFromFile(file);
+      if (css) {
+        allCss += css + '\n';
       }
     } catch (error) {
       console.warn(`Failed to process file ${file}:`, error);

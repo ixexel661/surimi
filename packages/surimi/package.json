@@ -35,6 +35,6 @@
   "devDependencies": {
     "@janis.me/linter-config": "workspace:*",
     "@janis.me/typescript-config": "workspace:*",
-    "tsdown": "^0.15.5"
+    "tsdown": "catalog:build"
   }
 }

@@ -6,9 +6,7 @@ export default defineConfig(() => {
   return {
     plugins: [
       surimi({
-        include: ['src/**/*.{js,ts,html}'],
-        devFeatures: true,
-        mode: 'virtual', // Use virtual CSS imports for auto-discovery
+        mode: 'virtual', // Use virtual CSS imports and auto-discovery of CSS files
       }),
       analyzer({
         analyzerMode: 'static',
