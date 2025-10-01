@@ -246,9 +246,7 @@ export interface IAttributeBuilder<TContext extends string, TAttribute extends s
   style(properties: CSSProperties): ISelectorBuilder<ResetToBase<ExtractSelector<TContext>>>;
 
   // Attribute matching methods - all return ISelectorBuilder for consistent API
-  equals<TValue extends string>(
-    value: TValue,
-  ): ISelectorBuilder<WithAttribute<TContext, TAttribute, 'equals', TValue>>;
+  equals<TValue extends string>(value: TValue): ISelectorBuilder<WithAttribute<TContext, TAttribute, 'equals', TValue>>;
   startsWith<TValue extends string>(
     value: TValue,
   ): ISelectorBuilder<WithAttribute<TContext, TAttribute, 'starts-with', TValue>>;
@@ -300,8 +298,6 @@ export interface IAttributeBuilder<TContext extends string, TAttribute extends s
     >
   >;
 }
-
-
 
 /**
  * Attribute selector utilities

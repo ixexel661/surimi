@@ -616,5 +616,3 @@ export class AttributeBuilder<TContext extends string, TAttribute extends string
     return new SelectorBuilder(newContext, this.postcssRoot);
   }
 }
-
-
