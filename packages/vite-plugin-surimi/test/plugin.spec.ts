@@ -1,7 +1,7 @@
 import type { ResolvedConfig } from 'vite';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { surimiPlugin } from '../src/plugin.js';
+import { surimi } from '../src/plugin.js';
 
 // Mock file system operations
 vi.mock('fs/promises', () => ({
@@ -33,7 +33,7 @@ describe('Surimi Vite Plugin', () => {
 
   describe('Plugin Configuration', () => {
     it('should have correct plugin name', () => {
-      const plugin = surimiPlugin();
+      const plugin = surimi();
       expect(plugin.name).toBe('vite-plugin-surimi');
     });
 
@@ -46,7 +46,7 @@ describe('Surimi Vite Plugin', () => {
         virtualModuleId: 'virtual:custom.css',
       };
 
-      const plugin = surimiPlugin(options);
+      const plugin = surimi(options);
       expect(plugin.name).toBe('vite-plugin-surimi');
     });
 
@@ -61,15 +61,15 @@ describe('Surimi Vite Plugin', () => {
         manualMode: { output: 'chunk' as const },
       };
 
-      const pluginInline = surimiPlugin(optionsInline);
-      const pluginChunk = surimiPlugin(optionsChunk);
+      const pluginInline = surimi(optionsInline);
+      const pluginChunk = surimi(optionsChunk);
 
       expect(pluginInline.name).toBe('vite-plugin-surimi');
       expect(pluginChunk.name).toBe('vite-plugin-surimi');
     });
 
     it('should use default options when none provided', () => {
-      const plugin = surimiPlugin();
+      const plugin = surimi();
       expect(plugin).toBeDefined();
       expect(plugin.name).toBe('vite-plugin-surimi');
     });
@@ -77,7 +77,7 @@ describe('Surimi Vite Plugin', () => {
 
   describe('Config Hook', () => {
     it('should add external dependencies in build mode when autoExternal is true', () => {
-      const plugin = surimiPlugin({ autoExternal: true });
+      const plugin = surimi({ autoExternal: true });
       const config: TestConfig = {};
 
       // @ts-expect-error - accessing internal plugin method for testing
@@ -87,7 +87,7 @@ describe('Surimi Vite Plugin', () => {
     });
 
     it('should preserve existing external dependencies', () => {
-      const plugin = surimiPlugin({ autoExternal: true });
+      const plugin = surimi({ autoExternal: true });
       const config: TestConfig = {
         build: {
           rollupOptions: {
@@ -103,7 +103,7 @@ describe('Surimi Vite Plugin', () => {
     });
 
     it('should not add externals when autoExternal is false', () => {
-      const plugin = surimiPlugin({ autoExternal: false });
+      const plugin = surimi({ autoExternal: false });
       const config: TestConfig = {};
 
       // @ts-expect-error - accessing internal plugin method for testing
@@ -113,7 +113,7 @@ describe('Surimi Vite Plugin', () => {
     });
 
     it('should not modify config in serve mode', () => {
-      const plugin = surimiPlugin({ autoExternal: true });
+      const plugin = surimi({ autoExternal: true });
       const config: TestConfig = {};
 
       // @ts-expect-error - accessing internal plugin method for testing
@@ -125,7 +125,7 @@ describe('Surimi Vite Plugin', () => {
 
   describe('ResolveId Hook', () => {
     it('should resolve virtual surimi CSS module', () => {
-      const plugin = surimiPlugin();
+      const plugin = surimi();
 
       // @ts-expect-error - accessing internal plugin method for testing
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -135,7 +135,7 @@ describe('Surimi Vite Plugin', () => {
     });
 
     it('should not resolve non-virtual modules', () => {
-      const plugin = surimiPlugin();
+      const plugin = surimi();
 
       // @ts-expect-error - accessing internal plugin method for testing
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -147,7 +147,7 @@ describe('Surimi Vite Plugin', () => {
 
   describe('ConfigResolved Hook', () => {
     it('should store resolved config root', () => {
-      const plugin = surimiPlugin();
+      const plugin = surimi();
       const config = {
         root: '/test/root',
       } as ResolvedConfig;

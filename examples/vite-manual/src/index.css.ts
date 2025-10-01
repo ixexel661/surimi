@@ -80,12 +80,12 @@ s.select('.btn.secondary').hover().style({
 });
 
 // Responsive design
-s.select('.card').media('(max-width: 600px)').style({
+s.media('(max-width: 600px)').select('.card').style({
   padding: '1rem',
   margin: '0.5rem 0',
 });
 
-s.select('.btn').media('(max-width: 600px)').style({
+s.media('(max-width: 600px)').select('.btn').style({
   display: 'block',
   width: '100%',
   margin: '0.5rem 0',

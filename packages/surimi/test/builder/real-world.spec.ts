@@ -385,6 +385,27 @@ h1 {
     }
 }`);
     });
+
+    it('should allow selecting with where clauses in media queries', () => {
+      s.media('(max-width: 600px)')
+        .and()
+        .minHeight('200px')
+        .select('html')
+        .descendant('.button')
+        .hover()
+        .child('.icon')
+        .where('.svg')
+        .style({
+          display: 'none',
+        });
+
+      expect(s.build()).toBe(`\
+@media (max-width: 600px) and (min-height: 200px) {
+    html .button:hover > .icon:where(.svg) {
+        display: none
+    }
+}`);
+    });
   });
 
   describe('Framework-like Patterns', () => {

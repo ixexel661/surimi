@@ -4,6 +4,7 @@ import { buildSelectorWithRelationship, combineSelector, createDeclarations } fr
 import type {
   BuilderContext,
   CSSProperties,
+  IAttributeBuilder,
   IMediaQueryBuilder,
   ISelectorBuilder,
   JoinSelectors,
@@ -17,7 +18,7 @@ import type {
 export class SelectorBuilder<TContext extends string = string> implements ISelectorBuilder<TContext> {
   constructor(
     private context: BuilderContext,
-    private root: postcss.Root,
+    private postcssRoot: postcss.Root,
   ) {}
 
   style(properties: CSSProperties): ISelectorBuilder<TContext> {
@@ -75,12 +76,153 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
     return this.createChildInstance(newSelector);
   }
 
+  // Complex selector combinations
+  and(selector: string): ISelectorBuilder<`${TContext}${string}`> {
+    const newContext = {
+      ...this.context,
+      baseSelector: this.context.baseSelector + selector,
+    };
+    return new SelectorBuilder(newContext, this.postcssRoot);
+  }
+
+  is(selector: string): ISelectorBuilder<`${TContext}:is(${string})`> {
+    return this.addPseudoClass(`is(${selector})`);
+  }
+
+  where(selector: string): ISelectorBuilder<`${TContext}:where(${string})`> {
+    return this.addPseudoClass(`where(${selector})`);
+  }
+
+  not(selector: string): ISelectorBuilder<`${TContext}:not(${string})`> {
+    return this.addPseudoClass(`not(${selector})`);
+  }
+
+  // Combinator selectors
+  adjacent(selector: string): ISelectorBuilder<`${TContext} + ${string}`> {
+    const currentBaseSelector = combineSelector(
+      this.context.baseSelector,
+      this.context.pseudoClasses,
+      this.context.pseudoElements,
+    );
+
+    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'adjacent', selector);
+    return this.createChildInstance(newSelector);
+  }
+
+  sibling(selector: string): ISelectorBuilder<`${TContext} ~ ${string}`> {
+    const currentBaseSelector = combineSelector(
+      this.context.baseSelector,
+      this.context.pseudoClasses,
+      this.context.pseudoElements,
+    );
+
+    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'sibling', selector);
+    return this.createChildInstance(newSelector);
+  }
+
+  // Advanced pseudo-selectors
+  nthChild(value: number | string): ISelectorBuilder<`${TContext}:nth-child(${string})`> {
+    return this.addPseudoClass(`nth-child(${String(value)})`);
+  }
+
+  firstChild(): ISelectorBuilder<`${TContext}:first-child`> {
+    return this.addPseudoClass('first-child');
+  }
+
+  lastChild(): ISelectorBuilder<`${TContext}:last-child`> {
+    return this.addPseudoClass('last-child');
+  }
+
+  nthOfType(value: number | string): ISelectorBuilder<`${TContext}:nth-of-type(${string})`> {
+    return this.addPseudoClass(`nth-of-type(${String(value)})`);
+  }
+
+  // Attribute selectors
+  attr(attribute: string) {
+    return new AttributeBuilder(this.context, this.postcssRoot, attribute);
+  }
+
+  // Enhanced navigation
+  parent(): ISelectorBuilder {
+    const parentSelector = this.extractParentSelector(this.context.baseSelector);
+    if (!parentSelector) {
+      throw new Error('No parent selector found');
+    }
+
+    const newContext = {
+      baseSelector: parentSelector,
+      pseudoClasses: [],
+      pseudoElements: [],
+      mediaQuery: this.context.mediaQuery,
+    };
+    return new SelectorBuilder(newContext, this.postcssRoot);
+  }
+
+  root(): ISelectorBuilder {
+    const rootSelector = this.extractRootSelector(this.context.baseSelector);
+
+    // If we're already at root (no relationship combinators), return this instance
+    if (
+      rootSelector === this.context.baseSelector &&
+      this.context.pseudoClasses.length === 0 &&
+      this.context.pseudoElements.length === 0
+    ) {
+      return this;
+    }
+
+    const newContext = {
+      baseSelector: rootSelector,
+      pseudoClasses: [],
+      pseudoElements: [],
+      mediaQuery: this.context.mediaQuery,
+    };
+    return new SelectorBuilder(newContext, this.postcssRoot);
+  }
+
+  private extractParentSelector(selector: string): string | null {
+    // Handle child combinator
+    const childMatch = /^(.+) > [^>]+$/.exec(selector);
+    if (childMatch?.[1]) return childMatch[1];
+
+    // Handle descendant combinator (space)
+    const descendantMatch = /^(.+) [^>+~]+$/.exec(selector);
+    if (descendantMatch?.[1]) return descendantMatch[1];
+
+    // Handle adjacent sibling combinator
+    const adjacentMatch = /^(.+) \+ [^>+~]+$/.exec(selector);
+    if (adjacentMatch?.[1]) return adjacentMatch[1];
+
+    // Handle general sibling combinator
+    const siblingMatch = /^(.+) ~ [^>+~]+$/.exec(selector);
+    if (siblingMatch?.[1]) return siblingMatch[1];
+
+    return null;
+  }
+
+  private extractRootSelector(selector: string): string {
+    // Keep extracting parent until no more parents
+    let current = selector;
+    let root = current;
+
+    while (current) {
+      const parent = this.extractParentSelector(current);
+      if (parent) {
+        root = parent;
+        current = parent;
+      } else {
+        break;
+      }
+    }
+
+    return root;
+  }
+
   private addPseudoClass(pseudoClass: string) {
     const newContext = {
       ...this.context,
       pseudoClasses: [...this.context.pseudoClasses, pseudoClass],
     };
-    return new SelectorBuilder(newContext, this.root);
+    return new SelectorBuilder(newContext, this.postcssRoot);
   }
 
   private addPseudoElement(pseudoElement: string) {
@@ -88,7 +230,7 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
       ...this.context,
       pseudoElements: [...this.context.pseudoElements, pseudoElement],
     };
-    return new SelectorBuilder(newContext, this.root);
+    return new SelectorBuilder(newContext, this.postcssRoot);
   }
 
   private createResetInstance() {
@@ -98,7 +240,7 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
       pseudoElements: [],
       mediaQuery: this.context.mediaQuery,
     };
-    return new SelectorBuilder(newContext, this.root);
+    return new SelectorBuilder(newContext, this.postcssRoot);
   }
 
   private createChildInstance(newSelector: string) {
@@ -108,7 +250,7 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
       pseudoElements: [],
       mediaQuery: this.context.mediaQuery,
     };
-    return new SelectorBuilder(newContext, this.root);
+    return new SelectorBuilder(newContext, this.postcssRoot);
   }
 
   private getOrCreateRule(): postcss.Rule {
@@ -124,13 +266,13 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
     }
 
     // Look for existing rule with this selector
-    let existingRule = this.root.nodes.find(node => node.type === 'rule' && node.selector === completeSelector) as
-      | postcss.Rule
-      | undefined;
+    let existingRule = this.postcssRoot.nodes.find(
+      node => node.type === 'rule' && node.selector === completeSelector,
+    ) as postcss.Rule | undefined;
 
     if (!existingRule) {
       existingRule = postcss.rule({ selector: completeSelector });
-      this.root.append(existingRule);
+      this.postcssRoot.append(existingRule);
     }
 
     return existingRule;
@@ -142,7 +284,7 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
     }
 
     // Find or create media query
-    let mediaRule = this.root.nodes.find(
+    let mediaRule = this.postcssRoot.nodes.find(
       node => node.type === 'atrule' && node.name === 'media' && node.params === this.context.mediaQuery,
     ) as postcss.AtRule | undefined;
 
@@ -151,7 +293,7 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
         name: 'media',
         params: this.context.mediaQuery,
       });
-      this.root.append(mediaRule);
+      this.postcssRoot.append(mediaRule);
     }
 
     // Find or create rule inside media query
@@ -173,36 +315,36 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
  */
 export class MediaQueryBuilder<TQuery extends string = ''> implements IMediaQueryBuilder<TQuery> {
   private conditions: string[] = [];
-  private root: postcss.Root;
+  private postcssRoot: postcss.Root;
 
   constructor(root: postcss.Root, initialConditions?: string[]) {
-    this.root = root;
+    this.postcssRoot = root;
     this.conditions = initialConditions ?? [];
   }
 
   maxWidth(value: string): IMediaQueryBuilder {
     const newConditions = [...this.conditions, `(max-width: ${value})`];
-    return new MediaQueryBuilder(this.root, newConditions);
+    return new MediaQueryBuilder(this.postcssRoot, newConditions);
   }
 
   minWidth(value: string): IMediaQueryBuilder {
     const newConditions = [...this.conditions, `(min-width: ${value})`];
-    return new MediaQueryBuilder(this.root, newConditions);
+    return new MediaQueryBuilder(this.postcssRoot, newConditions);
   }
 
   maxHeight(value: string): IMediaQueryBuilder {
     const newConditions = [...this.conditions, `(max-height: ${value})`];
-    return new MediaQueryBuilder(this.root, newConditions);
+    return new MediaQueryBuilder(this.postcssRoot, newConditions);
   }
 
   minHeight(value: string): IMediaQueryBuilder {
     const newConditions = [...this.conditions, `(min-height: ${value})`];
-    return new MediaQueryBuilder(this.root, newConditions);
+    return new MediaQueryBuilder(this.postcssRoot, newConditions);
   }
 
   orientation(value: 'landscape' | 'portrait'): IMediaQueryBuilder {
     const newConditions = [...this.conditions, `(orientation: ${value})`];
-    return new MediaQueryBuilder(this.root, newConditions);
+    return new MediaQueryBuilder(this.postcssRoot, newConditions);
   }
 
   and(): IMediaQueryBuilder<TQuery> {
@@ -216,7 +358,7 @@ export class MediaQueryBuilder<TQuery extends string = ''> implements IMediaQuer
   }
 
   raw(query: string): IMediaQueryBuilder {
-    return new MediaQueryBuilder(this.root, [query]);
+    return new MediaQueryBuilder(this.postcssRoot, [query]);
   }
 
   select<TSelectors extends readonly string[]>(
@@ -230,7 +372,7 @@ export class MediaQueryBuilder<TQuery extends string = ''> implements IMediaQuer
       pseudoElements: [],
       mediaQuery: mediaQuery,
     };
-    return new SelectorBuilder(context, this.root) as ISelectorBuilder<
+    return new SelectorBuilder(context, this.postcssRoot) as ISelectorBuilder<
       WithMediaContext<JoinSelectors<TSelectors>, TQuery>
     >;
   }
@@ -239,3 +381,240 @@ export class MediaQueryBuilder<TQuery extends string = ''> implements IMediaQuer
     return this.conditions.join(' and ');
   }
 }
+
+/**
+ * Attribute builder for creating attribute selectors
+ */
+export class AttributeBuilder<TContext extends string, TAttribute extends string>
+  implements IAttributeBuilder<TContext, TAttribute>
+{
+  constructor(
+    private context: BuilderContext,
+    private postcssRoot: postcss.Root,
+    private attribute: TAttribute,
+  ) {}
+
+  style(properties: CSSProperties): ISelectorBuilder {
+    const rule = this.getOrCreateRule();
+    const declarations = createDeclarations(properties);
+    declarations.forEach(decl => rule.append(decl));
+
+    return this.createResetInstance();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- needed for proper type hints
+  equals<TValue extends string>(value: TValue): ISelectorBuilder {
+    const newSelector = this.buildAttributeSelector('equals', value);
+    const newContext = this.updateContextWithAttribute(newSelector);
+    return new SelectorBuilder(newContext, this.postcssRoot);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- needed for proper type hints
+  startsWith<TValue extends string>(value: TValue): ISelectorBuilder {
+    const newSelector = this.buildAttributeSelector('starts-with', value);
+    const newContext = this.updateContextWithAttribute(newSelector);
+    return new SelectorBuilder(newContext, this.postcssRoot);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- needed for proper type hints
+  endsWith<TValue extends string>(value: TValue): ISelectorBuilder {
+    const newSelector = this.buildAttributeSelector('ends-with', value);
+    const newContext = this.updateContextWithAttribute(newSelector);
+    return new SelectorBuilder(newContext, this.postcssRoot);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- needed for proper type hints
+  contains<TValue extends string>(value: TValue): ISelectorBuilder {
+    const newSelector = this.buildAttributeSelector('contains', value);
+    const newContext = this.updateContextWithAttribute(newSelector);
+    return new SelectorBuilder(newContext, this.postcssRoot);
+  }
+
+  // Continue building with attribute existence
+  hover(): ISelectorBuilder {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new SelectorBuilder(
+      {
+        ...newContext,
+        pseudoClasses: [...newContext.pseudoClasses, 'hover'],
+      },
+      this.postcssRoot,
+    );
+  }
+
+  focus(): ISelectorBuilder {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new SelectorBuilder(
+      {
+        ...newContext,
+        pseudoClasses: [...newContext.pseudoClasses, 'focus'],
+      },
+      this.postcssRoot,
+    );
+  }
+
+  active(): ISelectorBuilder {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new SelectorBuilder(
+      {
+        ...newContext,
+        pseudoClasses: [...newContext.pseudoClasses, 'active'],
+      },
+      this.postcssRoot,
+    );
+  }
+
+  disabled(): ISelectorBuilder {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new SelectorBuilder(
+      {
+        ...newContext,
+        pseudoClasses: [...newContext.pseudoClasses, 'disabled'],
+      },
+      this.postcssRoot,
+    );
+  }
+
+  attr<TAttr extends string>(attribute: TAttr) {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new AttributeBuilder(newContext, this.postcssRoot, attribute);
+  }
+
+  // Advanced pseudo-selectors
+  nthChild(value: number | string): ISelectorBuilder {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new SelectorBuilder(
+      {
+        ...newContext,
+        pseudoClasses: [...newContext.pseudoClasses, `nth-child(${String(value)})`],
+      },
+      this.postcssRoot,
+    );
+  }
+
+  firstChild(): ISelectorBuilder {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new SelectorBuilder(
+      {
+        ...newContext,
+        pseudoClasses: [...newContext.pseudoClasses, 'first-child'],
+      },
+      this.postcssRoot,
+    );
+  }
+
+  lastChild(): ISelectorBuilder {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new SelectorBuilder(
+      {
+        ...newContext,
+        pseudoClasses: [...newContext.pseudoClasses, 'last-child'],
+      },
+      this.postcssRoot,
+    );
+  }
+
+  nthOfType(value: number | string): ISelectorBuilder {
+    const newContext = this.updateContextWithAttributeExistence();
+    return new SelectorBuilder(
+      {
+        ...newContext,
+        pseudoClasses: [...newContext.pseudoClasses, `nth-of-type(${String(value)})`],
+      },
+      this.postcssRoot,
+    );
+  }
+
+  private buildAttributeSelector(operator: string, value: string): string {
+    switch (operator) {
+      case 'equals':
+        return `[${this.attribute}="${value}"]`;
+      case 'starts-with':
+        return `[${this.attribute}^="${value}"]`;
+      case 'ends-with':
+        return `[${this.attribute}$="${value}"]`;
+      case 'contains':
+        return `[${this.attribute}*="${value}"]`;
+      default:
+        return `[${this.attribute}="${value}"]`;
+    }
+  }
+
+  private updateContextWithAttribute(attributeSelector: string): BuilderContext {
+    return {
+      ...this.context,
+      baseSelector: this.context.baseSelector + attributeSelector,
+    };
+  }
+
+  private updateContextWithAttributeExistence(): BuilderContext {
+    return {
+      ...this.context,
+      baseSelector: this.context.baseSelector + `[${this.attribute}]`,
+    };
+  }
+
+  private getOrCreateRule(): postcss.Rule {
+    const completeSelector = combineSelector(
+      this.context.baseSelector + `[${this.attribute}]`,
+      this.context.pseudoClasses,
+      this.context.pseudoElements,
+    );
+
+    if (this.context.mediaQuery) {
+      return this.getOrCreateMediaRule(completeSelector);
+    }
+
+    let existingRule = this.postcssRoot.nodes.find(
+      node => node.type === 'rule' && node.selector === completeSelector,
+    ) as postcss.Rule | undefined;
+
+    if (!existingRule) {
+      existingRule = postcss.rule({ selector: completeSelector });
+      this.postcssRoot.append(existingRule);
+    }
+
+    return existingRule;
+  }
+
+  private getOrCreateMediaRule(selector: string): postcss.Rule {
+    if (!this.context.mediaQuery) {
+      throw new Error('Media query context is required');
+    }
+
+    let mediaRule = this.postcssRoot.nodes.find(
+      node => node.type === 'atrule' && node.name === 'media' && node.params === this.context.mediaQuery,
+    ) as postcss.AtRule | undefined;
+
+    if (!mediaRule) {
+      mediaRule = postcss.atRule({
+        name: 'media',
+        params: this.context.mediaQuery,
+      });
+      this.postcssRoot.append(mediaRule);
+    }
+
+    let rule = mediaRule.nodes?.find(node => node.type === 'rule' && node.selector === selector) as
+      | postcss.Rule
+      | undefined;
+
+    if (!rule) {
+      rule = postcss.rule({ selector });
+      mediaRule.append(rule);
+    }
+
+    return rule;
+  }
+
+  private createResetInstance(): ISelectorBuilder {
+    const newContext = {
+      baseSelector: this.context.baseSelector,
+      pseudoClasses: [],
+      pseudoElements: [],
+      mediaQuery: this.context.mediaQuery,
+    };
+    return new SelectorBuilder(newContext, this.postcssRoot);
+  }
+}
+
+

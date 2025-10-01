@@ -39,16 +39,21 @@ to generate CSS files with **zero runtime overhead** - CSS generation happens at
 ### Phase 2: Enhanced Selectors 🔧
 
 - [ ] **Complex Selector Combinations**
-  - [ ] `.and('.class')` - Multiple class selector (`.btn.primary`)
-  - [ ] `.not('.class')` - Negation pseudo-class (`:not()`)
+  - [ ] New builders for pseudo selectors, offering raw queries as fallback
+    - [ ] `.and('.class')` - Multiple class selector (`.btn.primary`)
+    - [ ] `.is()`,
+    - [ ] `.where()`,
+    - [ ] `.not('.class')` - Negation pseudo-class (`:not()`)
   - [ ] `.adjacent('selector')` - Adjacent sibling combinator (`+`)
   - [ ] `.sibling('selector')` - General sibling combinator (`~`)
 
 - [ ] **Attribute Selectors**
-  - [ ] `.attr('name', 'value')` - Exact attribute match (`[attr="value"]`)
-  - [ ] `.attr('name', 'value', 'starts')` - Starts with (`[attr^="value"]`)
-  - [ ] `.attr('name', 'value', 'ends')` - Ends with (`[attr$="value"]`)
-  - [ ] `.attr('name', 'value', 'contains')` - Contains (`[attr*="value"]`)
+  - [ ] `.attr('name').equals('value')` - Exact attribute match (`[attr="value"]`)
+  - [ ] `.attr('name').startsWith('value')` - Starts with (`[attr^="value"]`)
+  - [ ] `.attr('name').endsWith('value')` - Ends with (`[attr$="value"]`)
+  - [ ] `.attr('name').contains('value')` - Contains (`[attr*="value"]`)
+  - [ ] `.attr('name').equals('value').caseSensitive()` - Equals exactly, case sensitive (s suffix)
+  - [ ] `.attr('name').equals('value').caseInsensitive()` - Equals exactly, case inSensitive (i suffix)
 
 - [ ] **Advanced Pseudo-selectors**
   - [ ] `.nthChild(n)` - `:nth-child(n)` selector
@@ -60,7 +65,6 @@ to generate CSS files with **zero runtime overhead** - CSS generation happens at
 - [ ] **Enhanced Navigation**
   - [ ] `.parent()` - Navigate back to parent selector
   - [ ] `.root()` - Navigate back to root selector
-  - [ ] Complex nesting with proper CSS generation
 
 ### Phase 3: Advanced Features 🚀
 

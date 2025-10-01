@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { surimiPlugin } from '../src/plugin.js';
+import { surimi } from '../src/plugin.js';
 
 describe('Surimi Plugin - Mode Behavior', () => {
   describe('Mode Configuration', () => {
@@ -8,13 +8,13 @@ describe('Surimi Plugin - Mode Behavior', () => {
       const modes = ['manual', 'virtual'] as const;
 
       modes.forEach(mode => {
-        const plugin = surimiPlugin({ mode });
+        const plugin = surimi({ mode });
         expect(plugin.name).toBe('vite-plugin-surimi');
       });
     });
 
     it('should use manual mode by default', () => {
-      const plugin = surimiPlugin();
+      const plugin = surimi();
       expect(plugin).toBeDefined();
       expect(plugin.name).toBe('vite-plugin-surimi');
     });
@@ -23,8 +23,8 @@ describe('Surimi Plugin - Mode Behavior', () => {
       const inlineConfig = { mode: 'manual' as const, manualMode: { output: 'inline' as const } };
       const chunkConfig = { mode: 'manual' as const, manualMode: { output: 'chunk' as const } };
 
-      const inlinePlugin = surimiPlugin(inlineConfig);
-      const chunkPlugin = surimiPlugin(chunkConfig);
+      const inlinePlugin = surimi(inlineConfig);
+      const chunkPlugin = surimi(chunkConfig);
 
       expect(inlinePlugin.name).toBe('vite-plugin-surimi');
       expect(chunkPlugin.name).toBe('vite-plugin-surimi');
@@ -113,7 +113,7 @@ if (typeof document !== 'undefined') {
 
   describe('Plugin Hooks Structure', () => {
     it('should have all required plugin hooks', () => {
-      const plugin = surimiPlugin();
+      const plugin = surimi();
 
       // Check that the plugin has the expected structure
       expect(plugin.name).toBe('vite-plugin-surimi');
@@ -125,7 +125,7 @@ if (typeof document !== 'undefined') {
     });
 
     it('should have correct plugin name and structure', () => {
-      const plugin = surimiPlugin({ mode: 'virtual' });
+      const plugin = surimi({ mode: 'virtual' });
 
       expect(plugin.name).toBe('vite-plugin-surimi');
       expect(plugin).toHaveProperty('config');
@@ -149,7 +149,7 @@ if (typeof document !== 'undefined') {
       ];
 
       validConfigs.forEach(config => {
-        expect(() => surimiPlugin(config)).not.toThrow();
+        expect(() => surimi(config)).not.toThrow();
       });
     });
 
@@ -160,8 +160,8 @@ if (typeof document !== 'undefined') {
       };
 
       Object.values(patterns).forEach(pattern => {
-        expect(() => surimiPlugin({ include: pattern })).not.toThrow();
-        expect(() => surimiPlugin({ exclude: pattern })).not.toThrow();
+        expect(() => surimi({ include: pattern })).not.toThrow();
+        expect(() => surimi({ exclude: pattern })).not.toThrow();
       });
     });
   });
