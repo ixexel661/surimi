@@ -1,4 +1,5 @@
 import { createFilter } from '@rollup/pluginutils';
+import type { OutputChunk } from 'rolldown';
 import { build } from 'rolldown';
 
 export interface CompileOptions {
@@ -8,7 +9,13 @@ export interface CompileOptions {
   exclude?: string | string[];
 }
 
-export default async function compile(options: CompileOptions) {
+export interface CompileResult {
+  /* The generated CSS output */
+  css: string;
+  watchFiles: string[];
+}
+
+export default async function compile(options: CompileOptions): Promise<CompileResult> {
   const { inputPath, cwd, include, exclude } = options;
 
   const filter = createFilter(include, exclude);
@@ -34,9 +41,16 @@ export default async function compile(options: CompileOptions) {
     ],
   });
 
-  const output = buildRes.output[0].code;
-  const css = await execute(output);
-  return css;
+  const output = buildRes.output[0];
+  const css = await execute(output.code);
+
+  // Extract all imported modules as watch files
+  const watchFiles = getModuleDependencies(output);
+
+  return {
+    css,
+    watchFiles: [...new Set(watchFiles)],
+  };
 }
 
 async function execute(code: string) {
@@ -50,4 +64,31 @@ async function execute(code: string) {
     console.error('Error executing Surimi code:', error);
     throw error;
   }
+}
+
+function getModuleDependencies(module: OutputChunk): string[] {
+  const watchFiles: string[] = [];
+
+  // Add the main input file
+  watchFiles.push(module.fileName);
+
+  // Add all imports from the rolldown output
+  if (module.imports.length > 0) {
+    watchFiles.push(...module.imports);
+  }
+
+  // Add dynamic imports if any
+  if (module.dynamicImports.length > 0) {
+    watchFiles.push(...module.dynamicImports);
+  }
+
+  if ('modules' in module && Object.keys(module.modules).length > 0) {
+    for (const moduleId of Object.keys(module.modules)) {
+      if (!moduleId.includes('node_modules')) {
+        watchFiles.push(moduleId);
+      }
+    }
+  }
+
+  return watchFiles;
 }

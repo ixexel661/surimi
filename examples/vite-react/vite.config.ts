@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
-import surimi from 'vite-plugin-surimi';
+import surimiPlugin from 'vite-plugin-surimi';
 
 export default defineConfig(() => {
   return {
     plugins: [
-      surimi(),
+      surimiPlugin({ inlineCss: true }),
       analyzer({
         analyzerMode: 'static',
         summary: true,

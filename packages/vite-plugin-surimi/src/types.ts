@@ -12,4 +12,6 @@ export interface SurimiOptions {
    * @default ['node_modules/**', '**\/*.d.ts']
    */
   exclude?: string | string[];
+
+  inlineCss?: boolean;
 }
