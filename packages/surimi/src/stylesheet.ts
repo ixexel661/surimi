@@ -2,7 +2,14 @@ import postcss from 'postcss';
 
 import { MediaQueryBuilder, SelectorBuilder } from '#builder';
 import { joinSelectors } from '#css-generator';
-import type { IMediaQueryBuilder, ISelectorBuilder, JoinSelectors } from '#types';
+import { ClassSelector, IdSelector } from '#selectors';
+import type {
+  IMediaQueryBuilder,
+  ISelectorBuilder,
+  JoinSelectors,
+  NormalizeSelectorArray,
+  SelectorInput,
+} from '#types';
 
 /**
  * Surimi CSS builder with global stylesheet management
@@ -17,9 +24,17 @@ export abstract class Surimi {
 
   /**
    * Create a selector builder for the given selectors
+   * Accepts both strings and selector classes (ClassSelector, IdSelector)
    */
-  static select<T extends readonly string[]>(...selectors: T): ISelectorBuilder<JoinSelectors<T>> {
-    const normalizedSelector = joinSelectors(...selectors);
+  static select<T extends readonly SelectorInput[]>(
+    ...selectors: T
+  ): ISelectorBuilder<JoinSelectors<NormalizeSelectorArray<T>>> {
+    // Normalize selector inputs to strings
+    const normalizedSelectors = selectors.map(selector =>
+      typeof selector === 'string' ? selector : selector.toSelector(),
+    );
+
+    const normalizedSelector = joinSelectors(...normalizedSelectors);
 
     // Create builder context
     const context = {
@@ -31,7 +46,7 @@ export abstract class Surimi {
 
     const builder = new SelectorBuilder(context, this.root);
     this.selectors.set(normalizedSelector, builder);
-    return builder as ISelectorBuilder<JoinSelectors<T>>;
+    return builder as ISelectorBuilder<JoinSelectors<NormalizeSelectorArray<T>>>;
   }
 
   /**
@@ -69,26 +84,26 @@ export abstract class Surimi {
   }
 
   /**
-   * Create a class name string that can be exported and used in components
+   * Create a class selector that can be exported and used in components
    * This will be preserved during compilation while other Surimi code is removed
    * @param name The class name to create
-   * @returns A string with the class name and a special symbol marking it for export preservation
+   * @returns A ClassSelector instance with toString() and toSelector() methods
    */
-  static class(name: string): string {
-    const symbol = `.${name}`;
-
-    return symbol;
+  static class(name: string): ClassSelector {
+    // Also register the selector so CSS can be generated
+    this.select(`.${name}`);
+    return new ClassSelector(name);
   }
 
   /**
-   * Create an ID string that can be exported and used in components
+   * Create an ID selector that can be exported and used in components
    * This will be preserved during compilation while other Surimi code is removed
-   * @param name The ID to create
-   * @returns A string with the ID and a special symbol marking it for export preservation
+   * @param name The ID name to create
+   * @returns An IdSelector instance with toString() and toSelector() methods
    */
-  static id(name: string): string {
-    const symbol = `#${name}`;
-
-    return symbol;
+  static id(name: string): IdSelector {
+    // Also register the selector so CSS can be generated
+    this.select(`#${name}`);
+    return new IdSelector(name);
   }
 }

@@ -2,15 +2,19 @@ import s from 'surimi';
 
 import { theme } from '#styles/theme';
 
-const app = s.select('#app').style({
+export const app = s.id('app');
+
+const _app = s.select(app).style({
   width: '100vw',
   height: '100vh',
   display: 'flex',
   justifyContent: 'center',
+  flexDirection: 'column',
   alignItems: 'center',
+  gap: '1rem',
 });
 
-app
+_app
   .descendant('a')
   .style({
     color: theme.colors.primaryDark,
@@ -23,6 +27,6 @@ app
     textDecoration: 'underline',
   });
 
-s.media('(max-width: 600px)').select('#app').style({
-  flexDirection: 'column',
+s.media('(max-width: 600px)').select(app).style({
+  gap: 0,
 });

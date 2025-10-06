@@ -75,18 +75,23 @@ async function execute(code: string): Promise<{ css: string; js: string }> {
     const exports: string[] = [];
     for (const [key, value] of Object.entries(module)) {
       if (key !== 'default' && key !== '__SURIMI_GENERATED_CSS__') {
-        // Re-export the value as a string literal
-        if (typeof value === 'string') {
+        // Handle Surimi selector classes specially
+        if (value && typeof value === 'object' && 'toString' in value && 'toSelector' in value) {
+          // This is a ClassSelector or IdSelector - export the raw name (toString())
+          const stringValue = (value as { toString(): string }).toString();
+          exports.push(`export const ${key} = ${JSON.stringify(stringValue)};`);
+        } else if (typeof value === 'string') {
+          // Regular string export
           exports.push(`export const ${key} = ${JSON.stringify(value)};`);
         } else if (typeof value === 'object' && value !== null) {
+          // Other object exports (like theme objects)
           exports.push(`export const ${key} = ${JSON.stringify(value)};`);
         } else {
+          // Fallback for other types
           exports.push(`export const ${key} = ${JSON.stringify(String(value))};`);
         }
       }
     }
-
-    console.log(exports);
 
     // Generate the transformed JS
     const js =
@@ -104,7 +109,7 @@ function getModuleDependencies(module: OutputChunk): string[] {
   const watchFiles: string[] = [];
 
   // Add the main input file
-  watchFiles.push(module.fileName);
+  // watchFiles.push(module.fileName);
 
   // Add all imports from the rolldown output
   if (module.imports.length > 0) {

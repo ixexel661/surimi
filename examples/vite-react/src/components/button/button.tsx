@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import { button, theTheme } from './button.css';
+import { button } from './button.css';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   kind: 'primary' | 'secondary';
@@ -16,7 +16,6 @@ export default function Button({ children, kind, ...props }: ButtonProps) {
       {...props}
     >
       {children}
-      {theTheme.test}
     </button>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import Button from '#components/button';
 
-import './App.css.ts';
+import './App.css';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -19,6 +19,14 @@ function App() {
       </div>
       <h1>Surimi + Vite + React</h1>
       <div className="card">
+        <Button
+          kind="primary"
+          onClick={() => {
+            setCount(count => count + 1);
+          }}
+        >
+          count is {count}
+        </Button>
         <Button
           kind="primary"
           onClick={() => {

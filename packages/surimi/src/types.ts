@@ -15,6 +15,34 @@ export type CSSProperties = CSS.Properties;
  * Core type utilities for selector building and context management
  */
 
+/**
+ * Interface that all selector classes must implement
+ * This allows unified handling of class and id selectors
+ */
+export interface ISurimiSelector {
+  /** Returns the raw name without prefix (e.g., "button" for class, "header" for id) */
+  toString(): string;
+  /** Returns the CSS selector string (e.g., ".button", "#header") */
+  toSelector(): string;
+}
+
+/**
+ * Union type for acceptable selector inputs
+ */
+export type SelectorInput = string | ISurimiSelector;
+
+/**
+ * Helper type to normalize selector inputs to strings
+ */
+export type NormalizedSelector<T> = T extends ISurimiSelector ? string : T;
+
+/**
+ * Helper type to convert SelectorInput array to string array for JoinSelectors
+ */
+export type NormalizeSelectorArray<T extends readonly SelectorInput[]> = {
+  readonly [K in keyof T]: NormalizedSelector<T[K]>;
+};
+
 // Extract the first/primary selector from a comma-separated list
 type ExtractPrimarySelector<T extends string> = T extends `${infer First},${string}` ? First : T;
 
@@ -204,20 +232,9 @@ export interface IMediaQueryBuilder<TQuery extends string = ''> {
   raw<TRaw extends string>(query: TRaw): IMediaQueryBuilder<TRaw>;
 
   // Select elements within media context - returns unified selector builder
-  select<TSelectors extends readonly string[]>(
+  select<TSelectors extends readonly SelectorInput[]>(
     ...selectors: TSelectors
-  ): ISelectorBuilder<WithMediaContext<JoinSelectors<TSelectors>, TQuery>>;
-}
-
-/**
- * Global Surimi interface for top-level operations
- */
-export interface ISurimiGlobal {
-  select<T extends readonly string[]>(...selectors: T): ISelectorBuilder<JoinSelectors<T>>;
-  media(): IMediaQueryBuilder;
-  media<TQuery extends string>(query: TQuery): IMediaQueryBuilder<TQuery>;
-  build(): string;
-  clear(): void;
+  ): ISelectorBuilder<WithMediaContext<JoinSelectors<NormalizeSelectorArray<TSelectors>>, TQuery>>;
 }
 
 /**

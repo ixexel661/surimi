@@ -8,8 +8,17 @@ import type {
   IMediaQueryBuilder,
   ISelectorBuilder,
   JoinSelectors,
+  NormalizeSelectorArray,
+  SelectorInput,
   WithMediaContext,
 } from './types';
+
+/**
+ * Utility function to normalize selector inputs to strings
+ */
+function normalizeSelector(selector: SelectorInput): string {
+  return typeof selector === 'string' ? selector : selector.toSelector();
+}
 
 /**
  * Unified selector builder that handles both regular selectors and media-scoped selectors
@@ -54,25 +63,27 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
     return this.addPseudoElement('after');
   }
 
-  child(selector: string): ISelectorBuilder<`${TContext} > ${string}`> {
+  child(selector: SelectorInput): ISelectorBuilder<`${TContext} > ${string}`> {
     const currentBaseSelector = combineSelector(
       this.context.baseSelector,
       this.context.pseudoClasses,
       this.context.pseudoElements,
     );
 
-    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'child', selector);
+    const normalizedSelector = normalizeSelector(selector);
+    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'child', normalizedSelector);
     return this.createChildInstance(newSelector);
   }
 
-  descendant(selector: string): ISelectorBuilder<`${TContext} ${string}`> {
+  descendant(selector: SelectorInput): ISelectorBuilder<`${TContext} ${string}`> {
     const currentBaseSelector = combineSelector(
       this.context.baseSelector,
       this.context.pseudoClasses,
       this.context.pseudoElements,
     );
 
-    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'descendant', selector);
+    const normalizedSelector = normalizeSelector(selector);
+    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'descendant', normalizedSelector);
     return this.createChildInstance(newSelector);
   }
 
@@ -98,25 +109,27 @@ export class SelectorBuilder<TContext extends string = string> implements ISelec
   }
 
   // Combinator selectors
-  adjacent(selector: string): ISelectorBuilder<`${TContext} + ${string}`> {
+  adjacent(selector: SelectorInput): ISelectorBuilder<`${TContext} + ${string}`> {
     const currentBaseSelector = combineSelector(
       this.context.baseSelector,
       this.context.pseudoClasses,
       this.context.pseudoElements,
     );
 
-    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'adjacent', selector);
+    const normalizedSelector = normalizeSelector(selector);
+    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'adjacent', normalizedSelector);
     return this.createChildInstance(newSelector);
   }
 
-  sibling(selector: string): ISelectorBuilder<`${TContext} ~ ${string}`> {
+  sibling(selector: SelectorInput): ISelectorBuilder<`${TContext} ~ ${string}`> {
     const currentBaseSelector = combineSelector(
       this.context.baseSelector,
       this.context.pseudoClasses,
       this.context.pseudoElements,
     );
 
-    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'sibling', selector);
+    const normalizedSelector = normalizeSelector(selector);
+    const newSelector = buildSelectorWithRelationship(currentBaseSelector, 'sibling', normalizedSelector);
     return this.createChildInstance(newSelector);
   }
 
@@ -361,11 +374,13 @@ export class MediaQueryBuilder<TQuery extends string = ''> implements IMediaQuer
     return new MediaQueryBuilder(this.postcssRoot, [query]);
   }
 
-  select<TSelectors extends readonly string[]>(
+  select<TSelectors extends readonly SelectorInput[]>(
     ...selectors: TSelectors
-  ): ISelectorBuilder<WithMediaContext<JoinSelectors<TSelectors>, TQuery>> {
+  ): ISelectorBuilder<WithMediaContext<JoinSelectors<NormalizeSelectorArray<TSelectors>>, TQuery>> {
     const mediaQuery = this.buildQuery();
-    const joinedSelector = selectors.join(', ');
+    // Normalize selector inputs to strings
+    const normalizedSelectors = selectors.map(selector => normalizeSelector(selector));
+    const joinedSelector = normalizedSelectors.join(', ');
     const context = {
       baseSelector: joinedSelector,
       pseudoClasses: [],
@@ -373,7 +388,7 @@ export class MediaQueryBuilder<TQuery extends string = ''> implements IMediaQuer
       mediaQuery: mediaQuery,
     };
     return new SelectorBuilder(context, this.postcssRoot) as ISelectorBuilder<
-      WithMediaContext<JoinSelectors<TSelectors>, TQuery>
+      WithMediaContext<JoinSelectors<NormalizeSelectorArray<TSelectors>>, TQuery>
     >;
   }
 
