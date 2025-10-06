@@ -5,7 +5,7 @@ import surimiPlugin from 'vite-plugin-surimi';
 export default defineConfig(() => {
   return {
     plugins: [
-      surimiPlugin({ inlineCss: true }),
+      surimiPlugin({ inlineCss: false }),
       analyzer({
         analyzerMode: 'static',
         summary: true,

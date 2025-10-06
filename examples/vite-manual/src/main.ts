@@ -1,4 +1,4 @@
 // Import the virtual CSS module (auto-discovers all surimi files)
-import './index.css.ts';
+import './index.style';
 
 console.log('Surimi Vite Plugin Demo loaded!');

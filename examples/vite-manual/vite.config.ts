@@ -6,9 +6,8 @@ export default defineConfig(() => {
   return {
     plugins: [
       surimi({
-        manualMode: {
-          output: 'inline',
-        },
+        inlineCss: false,
+        include: ['**/*.style.ts'], // In case you want to use an alternative naming
       }),
       analyzer({
         analyzerMode: 'static',

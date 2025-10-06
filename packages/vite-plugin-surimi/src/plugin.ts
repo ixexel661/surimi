@@ -20,7 +20,7 @@ export default function surimiPlugin(options: SurimiOptions = {}): Plugin[] {
   let server: ViteDevServer | undefined;
 
   // Build cache for production builds
-  const buildCache = new Map<string, { css: string; js: string; cssFileId: string | undefined }>();
+  const buildCache = new Map<string, { css: string; js: string }>();
 
   // Dependency mapping: dependency file -> Set of CSS files that depend on it
   const dependencyMap = new Map<string, Set<string>>();
@@ -148,12 +148,43 @@ export default function surimiPlugin(options: SurimiOptions = {}): Plugin[] {
     },
     {
       name: 'vite-plugin-surimi:build',
+      resolveId(source) {
+        // Handle virtual CSS imports
+        if (source.endsWith('.surimi.css')) {
+          return source;
+        }
+        return null;
+      },
+      load(id) {
+        // Load virtual CSS files
+        if (id.endsWith('.surimi.css')) {
+          const originalId = id.replace('.surimi.css', '');
+          const cacheEntry = buildCache.get(originalId);
+          if (cacheEntry) {
+            // Return the CSS content with proper source map
+            return {
+              code: cacheEntry.css,
+              map: {
+                version: 3,
+                file: path.basename(id),
+                sources: [path.basename(originalId)],
+                names: [],
+                mappings: '', // Empty mappings for generated CSS
+                sourceRoot: '',
+              },
+            };
+          } else {
+            this.error(`Missing build cache entry for virtual CSS file: ${id}`);
+          }
+        }
+        return null;
+      },
       async transform(_, id) {
         if (!isBuild) return null;
 
         if (filter(id)) {
           try {
-            const { css, js, cssFileId } = await (async () => {
+            const { css, js } = await (async () => {
               if (!buildCache.has(id)) {
                 const compileResult = await compile({
                   inputPath: normalizePath(id),
@@ -162,26 +193,14 @@ export default function surimiPlugin(options: SurimiOptions = {}): Plugin[] {
                   exclude,
                 });
 
-                if (inlineCss) {
-                  return { css: compileResult.css, js: compileResult.js, cssFileId: undefined };
-                }
-
-                const cssFileName = path.basename(id, '.css');
-
-                // Emit the CSS as an asset
-                const cssFileId = this.emitFile({
-                  type: 'asset',
-                  fileName: cssFileName,
-                  source: compileResult.css,
+                buildCache.set(id, {
+                  css: compileResult.css,
+                  js: compileResult.js,
                 });
-
-                buildCache.set(id, { css: compileResult.css, js: compileResult.js, cssFileId });
               }
 
               const cacheEntry = buildCache.get(id);
-
               if (!cacheEntry) throw new Error('Unexpected missing cache entry');
-
               return cacheEntry;
             })();
 
@@ -189,16 +208,24 @@ export default function surimiPlugin(options: SurimiOptions = {}): Plugin[] {
 
             if (inlineCss) {
               const inliningSnippet = injectCssChunk(css, id);
-
               jsCode = `${js}\n\n${inliningSnippet}`;
             } else {
-              if (cssFileId === undefined) throw new Error('CSS file ID was undefined while not in inline mode');
-
-              // Asset mode - import CSS file
-              jsCode = `${js}\n\nimport "./${this.getFileName(cssFileId)}";`;
+              // Import virtual CSS file - Vite will process this and emit it as an asset
+              const virtualCssId = `${id}.surimi.css`;
+              jsCode = `${js}\n\nimport "${virtualCssId}";`;
             }
 
-            return jsCode;
+            return {
+              code: jsCode,
+              map: {
+                version: 3,
+                file: path.basename(id),
+                sources: [path.basename(id)],
+                names: [],
+                mappings: '', // Empty mappings for transformed JS
+                sourceRoot: '',
+              },
+            };
           } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             this.error(`Failed to compile Surimi file ${id}: ${message}`);
