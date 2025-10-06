@@ -4,9 +4,7 @@ export default defineConfig({
   entry: ['src/index.ts'],
   format: 'esm',
   platform: 'node',
-  target: 'node20',
+  target: 'node22',
   clean: true,
   dts: true,
-  // Keep external dependencies external for a plugin
-  external: ['vite', 'surimi', 'postcss'],
 });

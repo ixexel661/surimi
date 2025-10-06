@@ -9,7 +9,10 @@ import { normalizePath } from 'vite';
 import type { SurimiOptions } from './types.js';
 
 /**
- * Main plugin function that selects between build and dev modes
+ * Vite plugin to integrate Surimi CSS-in-JS compilation
+ * Supports both development (with HMR) and production build modes
+ *
+ * for plugin options, see {@link SurimiOptions}
  */
 export default function surimiPlugin(options: SurimiOptions = {}): Plugin[] {
   const { include = ['**/*.css.{ts,js}'], exclude = ['node_modules/**', '**/*.d.ts'], inlineCss = false } = options;

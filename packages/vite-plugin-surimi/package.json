@@ -45,13 +45,15 @@
     "fast-glob": "catalog:build"
   },
   "devDependencies": {
+    "@janis.me/linter-config": "workspace:*",
+    "@janis.me/typescript-config": "workspace:*",
     "@types/node": "catalog:types",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
-    "vite": "catalog:build"
+    "vite": "^6.0.0 <7.0.0"
   },
   "peerDependencies": {
     "surimi": "workspace:*",
-    "vite": "*7.0.0"
+    "vite": "^6.0.0 <7.0.0"
   }
 }
