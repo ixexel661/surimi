@@ -5,6 +5,8 @@ import { theme } from '#styles/theme';
 export const button = s.class('button');
 export const input = s.class('input');
 
+export const theTheme = { ...theme, ['test']: 123 };
+
 const buttonElem = s.select(button).style({
   padding: '0.5rem 1rem',
   border: 'none',

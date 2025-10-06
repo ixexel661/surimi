@@ -38,6 +38,7 @@
     "format": "prettier . --write"
   },
   "dependencies": {
+    "@emotion/hash": "catalog:prod",
     "csstype": "catalog:prod",
     "postcss": "catalog:prod"
   },

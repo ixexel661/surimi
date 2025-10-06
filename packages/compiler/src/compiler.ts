@@ -27,7 +27,7 @@ export default async function compile(options: CompileOptions): Promise<CompileR
     cwd,
     write: false,
     output: {
-      esModule: true,
+      exports: 'named',
     },
     plugins: [
       {
@@ -64,8 +64,6 @@ export default __SURIMI_GENERATED_CSS__;\n`;
 
 async function execute(code: string): Promise<{ css: string; js: string }> {
   try {
-    console.log('Executing Surimi code in sandboxed environment...');
-
     const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`;
     const module = (await import(dataUrl)) as Record<string, unknown>;
 
@@ -87,6 +85,8 @@ async function execute(code: string): Promise<{ css: string; js: string }> {
         }
       }
     }
+
+    console.log(exports);
 
     // Generate the transformed JS
     const js =
