@@ -1,7 +1,9 @@
 ---
 import plexMono from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 
-import '#styles/index.css';
+import '#styles/index.css.ts';
+
+import Header from '#components/Header/Header.astro';
 
 const { title, description } = Astro.props;
 
@@ -24,6 +26,7 @@ const metaDescription = description || 'Janis Jansen - Fullstack dev & creator';
   </head>
 
   <body>
+    <Header />
     <slot />
   </body>
 </html>

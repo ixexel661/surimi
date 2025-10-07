@@ -43,6 +43,29 @@ export default function surimiPlugin(options: SurimiOptions = {}): Plugin[] {
     return cacheEntry;
   };
 
+  // Used to convert file paths like /src/styles.css.ts to absolute paths.
+  // This is introduced to make SSR scenarios (like Astro) work correctly.
+  // There, the initial vite loading / resolution steps use absolute paths, but astro might not.
+  const getAbsoluteId = (filePath: string) => {
+    let resolvedId = filePath;
+
+    if (!resolvedConfig) throw new Error('getAbsoluteId called before config was resolved');
+
+    if (
+      filePath.startsWith(resolvedConfig.root) ||
+      // In monorepos the absolute path will be outside of config.root, so we check that they have the same root on the file system
+      // Paths from vite are always normalized, so we have to use the posix path separator
+      (path.isAbsolute(filePath) && filePath.split(path.posix.sep)[1] === resolvedConfig.root.split(path.posix.sep)[1])
+    ) {
+      resolvedId = filePath;
+    } else {
+      // In SSR mode we can have paths like /app/styles.css.ts
+      resolvedId = path.join(resolvedConfig.root, filePath);
+    }
+
+    return normalizePath(resolvedId);
+  };
+
   const getVirtualCssId = (sourceId: string): string => `${sourceId}${VIRTUAL_CSS_SUFFIX}`;
   const getSourceIdFromVirtual = (virtualId: string): string => virtualId.replace(VIRTUAL_CSS_SUFFIX, '');
 
@@ -126,21 +149,30 @@ if (import.meta.hot) {
         return modules;
       },
       resolveId(source) {
+        const [validId, query] = source.split('?');
+
         // Handle virtual CSS imports
-        if (source.endsWith(VIRTUAL_CSS_SUFFIX)) {
-          return source;
+        if (validId?.endsWith(VIRTUAL_CSS_SUFFIX)) {
+          // In SSR Mode, we can end up with paths like /src/styles.css.ts
+          const absoluteId = getAbsoluteId(validId);
+
+          return query ? `${absoluteId}?${query}` : absoluteId;
         }
         return null;
       },
       async load(id) {
+        const [validId] = id.split('?');
         // Load virtual CSS files. Surimi TS files are handled in transform()
-        if (id.endsWith(VIRTUAL_CSS_SUFFIX)) {
-          const originalId = getSourceIdFromVirtual(id);
-          let cacheEntry = compilationCache.get(originalId);
+        if (validId?.endsWith(VIRTUAL_CSS_SUFFIX)) {
+          const originalId = getSourceIdFromVirtual(validId);
+          // In SSR Mode, we can end up with paths like /src/styles.css.ts
+          const absoluteId = getAbsoluteId(originalId);
+          let cacheEntry = compilationCache.get(absoluteId);
 
           // If cache entry is missing (e.g., during HMR), regenerate it
-          if (!cacheEntry && filter(originalId)) {
-            cacheEntry = await getCompilationResult(originalId);
+          if (!cacheEntry && filter(absoluteId)) {
+            this.debug(`Regenerating cache for: ${absoluteId}`);
+            cacheEntry = await getCompilationResult(absoluteId);
           }
 
           if (cacheEntry) {
@@ -148,8 +180,8 @@ if (import.meta.hot) {
               code: cacheEntry.css,
               map: {
                 version: 3,
-                file: path.basename(id),
-                sources: [path.basename(originalId)],
+                file: path.basename(validId),
+                sources: [path.basename(absoluteId)],
                 names: [],
                 mappings: '',
               },
@@ -171,7 +203,7 @@ if (import.meta.hot) {
             const jsCode = generateJsWithHmr(js, css, id);
 
             // Add file dependencies for proper HMR
-            if (isDev) {
+            if (isDev && !options?.ssr) {
               dependencies.forEach((dep: string) => {
                 this.addWatchFile(dep);
               });
