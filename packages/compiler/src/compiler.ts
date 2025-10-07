@@ -14,7 +14,7 @@ export interface CompileResult {
   css: string;
   /* The transformed JavaScript with preserved exports */
   js: string;
-  watchFiles: string[];
+  dependencies: string[];
 }
 
 export default async function compile(options: CompileOptions): Promise<CompileResult> {
@@ -58,7 +58,7 @@ export default __SURIMI_GENERATED_CSS__;\n`;
   return {
     css,
     js,
-    watchFiles: [...new Set(watchFiles)],
+    dependencies: [...new Set(watchFiles)],
   };
 }
 
@@ -124,6 +124,8 @@ function getModuleDependencies(module: OutputChunk): string[] {
   if ('modules' in module && Object.keys(module.modules).length > 0) {
     for (const moduleId of Object.keys(module.modules)) {
       if (!moduleId.includes('node_modules')) {
+        if (moduleId.includes('rolldown:runtime')) continue;
+
         watchFiles.push(moduleId);
       }
     }

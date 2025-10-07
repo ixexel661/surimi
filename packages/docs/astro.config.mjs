@@ -10,10 +10,6 @@ export default defineConfig({
     service: passthroughImageService(),
   },
 
-  build: {
-    inlineStylesheets: 'always',
-  },
-
   vite: {
     plugins: [surimiPlugin()],
   },
