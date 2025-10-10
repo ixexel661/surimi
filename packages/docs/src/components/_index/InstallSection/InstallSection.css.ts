@@ -17,7 +17,7 @@ const installSectionContainer = installSection.child('.install-section__containe
 // Header
 const installSectionHeader = installSectionContainer.child('.install-section__header').style({
   textAlign: 'center',
-  marginBottom: theme.spacing[12],
+  marginBottom: theme.spacing[8],
 });
 
 installSectionHeader.child('.install-section__badge').style({
@@ -52,13 +52,13 @@ const installSectionCommands = installSectionContainer.child('.install-section__
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing[4],
-  marginBottom: theme.spacing[16],
+  marginBottom: theme.spacing[8],
 });
 
 const installCommand = installSectionCommands.child('.install-command').style({
   display: 'flex',
   alignItems: 'center',
-  backgroundColor: theme.surface.default,
+  backgroundColor: theme.bg.subtle,
   border: `1px solid ${theme.border.default}`,
   borderRadius: theme.radius.lg,
   padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
@@ -126,7 +126,7 @@ installCommandCopy.descendant('svg').style({
 
 // Quick Start section
 const installSectionQuickstart = installSectionContainer.child('.install-section__quickstart').style({
-  backgroundColor: theme.surface.default,
+  backgroundColor: theme.bg.subtle,
   border: `1px solid ${theme.border.default}`,
   borderRadius: theme.radius.xl,
   padding: 'clamp(1.5rem, 4vw, 2rem)',

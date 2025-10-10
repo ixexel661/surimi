@@ -36,7 +36,7 @@ const codeComparison = codeSection.child('.code-comparison').style({
 
 // Code blocks
 const codeBlock = codeComparison.child('.code-block').style({
-  backgroundColor: theme.surface.default,
+  backgroundColor: theme.bg.canvas,
   borderRadius: '12px',
   border: `1px solid ${theme.border.default}`,
   overflow: 'hidden',
@@ -85,7 +85,7 @@ surimiCodeBlock.descendant('.code-header .code-label').style({
 codeBlock.child('pre').style({
   margin: 0,
   padding: '20px',
-  backgroundColor: theme.surface.default,
+  backgroundColor: theme.bg.subtle,
   overflow: 'auto',
   textAlign: 'left',
 });

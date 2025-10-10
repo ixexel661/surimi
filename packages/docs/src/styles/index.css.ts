@@ -1,6 +1,8 @@
 import { select } from 'surimi';
 
-import { theme } from './theme';
+import { config, theme } from '.';
+
+import './code.css';
 
 select('@font-face').style({
   fontFamily: 'IBM Plex Mono',
@@ -35,7 +37,7 @@ select('h1, h2, h3, h4, h5, h6').style({
 });
 
 select('p, li, dd').style({
-  maxInlineSize: '80ch',
+  maxInlineSize: config.global.maxInlineWidth,
   textWrap: 'pretty',
 });
 
@@ -46,6 +48,10 @@ const link = select('a').style({
 
 link.has('svg, h1, h2, h3, h4, h5, h6').style({
   textDecoration: 'none',
+});
+
+link.hover().style({
+  color: theme.text.primary,
 });
 
 select('ul, ol, dl')

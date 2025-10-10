@@ -7,10 +7,10 @@ const hero = select('.hero').style({
   flexDirection: 'column',
   alignItems: 'center',
   textAlign: 'center',
-  padding: `${theme.spacing[20]} ${theme.spacing[8]}`,
+  padding: theme.spacing[11],
   background: theme.gradients.subtle,
   color: theme.text.default,
-  gap: theme.spacing[8],
+  gap: theme.spacing[6],
   borderBottom: `1px solid ${theme.border.default}`,
   justifyContent: 'center',
 });
@@ -41,7 +41,7 @@ hero.child('.hero__subtitle').style({
   margin: 0,
   maxWidth: '650px',
   lineHeight: theme.font.lineHeight.relaxed,
-  marginBottom: theme.spacing[8],
+  marginBottom: theme.spacing[6],
 });
 
 // Button container

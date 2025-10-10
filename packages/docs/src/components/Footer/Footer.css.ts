@@ -20,7 +20,7 @@ const footerContent = footerContainer.child('.footer__content').style({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
   gap: 'clamp(2rem, 5vw, 4rem)',
-  marginBottom: theme.spacing[12],
+  marginBottom: theme.spacing[7],
 });
 
 // Brand section
@@ -108,7 +108,7 @@ const footerSectionList = footerSection.child('.footer__section-list').style({
   margin: 0,
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing[3],
+  gap: theme.spacing[2],
 });
 
 footerSectionList.child('.footer__section-item').style({
@@ -130,7 +130,7 @@ footerSectionLink.hover().style({
 // Bottom section
 const footerBottom = footerContainer.child('.footer__bottom').style({
   borderTop: `1px solid ${theme.border.default}`,
-  paddingTop: theme.spacing[8],
+  paddingTop: theme.spacing[6],
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',

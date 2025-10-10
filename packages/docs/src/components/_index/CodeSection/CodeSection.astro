@@ -33,8 +33,8 @@ const container = select('#container').style({
   backgroundColor: theme.colors.background,
 });
 
-container
-  .child('.button').style({
+container.child('.button')
+  .style({
     color: theme.colors.primary,
   })
   .hover().style({
@@ -48,8 +48,10 @@ container
 <section class="code-section">
   <h2>See It In Action</h2>
   <p class="section-subtitle">
-    Traditional CSS is nice and simple. But it's lacking re-usable selectors, compile-time and type safety, a clear
-    bridge to JS and more.
+    CSS is nice and (somewhat) simple. But it's lacking things we're used to in coding, like <b>re-usable</b> selectors,
+    <b>compile-time</b> and <b>type safety</b>, a direct <b>JS interface</b>, <b>composability</b> and other things that
+    make coding great.
+    <br />
     <br />
     This is how <b>surimi</b> solves these issues:
   </p>
@@ -70,6 +72,7 @@ container
 
   <div class="pro-tip">
     <strong>Pro Tip:</strong> With Surimi, you get full TypeScript type checking, autocomplete for property names and values,
-    and instant feedback on typos or invalid CSS.
+    and instant feedback on typos or invalid CSS. If you change a selector (like <code>.container</code>), all related
+    styles update automatically.
   </div>
 </section>

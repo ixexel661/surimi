@@ -27,7 +27,7 @@ const groupedDocs = Object.entries(SIDEBAR_LABELS).reduce(
     {
       Object.entries(groupedDocs).map(([category, docs]) => (
         <li class="sidebar__category">
-          <h3 class="sidebar__category-title">{category}</h3>
+          <p class="sidebar__category-title">{category}</p>
           <ul class="sidebar__category-list">
             {docs.map(doc => (
               <li class="sidebar__doc-item">

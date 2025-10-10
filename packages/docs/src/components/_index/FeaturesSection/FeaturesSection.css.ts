@@ -4,7 +4,7 @@ import { theme } from '#styles/theme';
 
 // Why Choose Surimi section
 const featuresSection = select('.features-section').style({
-  padding: `${theme.spacing[20]} ${theme.spacing[8]}`,
+  padding: `${theme.spacing[8]} ${theme.spacing[6]}`,
   backgroundColor: theme.bg.app,
   borderBottom: `1px solid ${theme.border.default}`,
 });
@@ -27,7 +27,7 @@ featuresSectionContainer.child('.features-section__subtitle').style({
   color: theme.text.subtle,
   textAlign: 'center',
   maxWidth: '700px',
-  margin: `0 auto ${theme.spacing[16]}`,
+  margin: `0 auto ${theme.spacing[9]}`,
   lineHeight: theme.font.lineHeight.relaxed,
 });
 
@@ -35,12 +35,12 @@ const featuresSectionGrid = featuresSectionContainer.child('.features-section__g
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
   gap: theme.spacing[6],
-  marginTop: theme.spacing[12],
+  marginTop: theme.spacing[8],
 });
 
 // Why Choose feature card
 const featuresSectionCard = featuresSectionGrid.child('.features-section-card').style({
-  backgroundColor: theme.surface.default,
+  backgroundColor: theme.bg.subtle,
   border: `1px solid ${theme.border.default}`,
   borderRadius: theme.radius.lg,
   padding: theme.spacing[8],

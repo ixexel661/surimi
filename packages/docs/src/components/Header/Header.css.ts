@@ -1,14 +1,14 @@
 import { select } from 'surimi';
 
-import { theme } from '#styles/theme';
+import { config, theme } from '#styles';
 
 const header = select('.header').style({
   display: 'flex',
-  height: '70px',
+  height: config.header.height,
   alignItems: 'center',
   gap: theme.spacing[6],
   padding: `0 ${theme.spacing[8]}`,
-  backgroundColor: `${theme.surface.default}f8`, // 97% opacity
+  backgroundColor: theme.bg.app,
   color: theme.text.default,
   borderBottom: `1px solid ${theme.border.default}`,
   backdropFilter: 'blur(12px)',
