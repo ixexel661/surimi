@@ -35,5 +35,5 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile --prefer-offline
-      - run: pnpm build
+      - run: pnpm run build:ci
       - run: pnpm -w test
