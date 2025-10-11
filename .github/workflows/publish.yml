@@ -5,7 +5,7 @@ on:
     tags:
       - 'surimi@*'
       - 'compiler@*'
-      - 'vite-plugin@*'
+      - 'vite-plugin-surimi@*'
 
 permissions:
   contents: write
