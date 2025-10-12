@@ -1,8 +1,8 @@
 import type { Terminal as XTerm } from '@xterm/xterm';
-import { use, useState } from 'react';
+import { useState } from 'react';
 
 import * as Editor from '#components/Editor';
-import { Runtime, UUID } from '#core';
+import { Runtime } from '#core';
 import type { FileSystemTree, TerminalDimensions } from '#types';
 
 import './playground.css';
@@ -24,10 +24,11 @@ select('html').style({ backgroundColor: 'red' });
   "name": "surimi-playground-app",
   "type": "module",
   "dependencies": {
+    "surimi": "latest",
     "@surimi/compiler": "latest"
   },
   "scripts": {
-    "build": "surimi compile index.ts --outDir dist --no-js"
+    "build": "surimi compile index.ts --out-dir=./dist --no-js"
   }
 }`,
     },
@@ -41,9 +42,11 @@ export default function Playgroun() {
     const _runtime = new Runtime();
     await _runtime.init('surimi');
     await _runtime.initTerminal(xterm);
+    await _runtime.mount(files);
+
     setRuntime(_runtime);
 
-    await _runtime.mount(files);
+    xterm.input('pnpm install && pnpm run build\n');
   };
 
   const handleWriteFile = async (filepath: string, content: string | undefined) => {
@@ -68,10 +71,26 @@ export default function Playgroun() {
 
   return (
     <Editor.Provider>
-      <Editor.Root tree={files} writeFile={handleWriteFile} readFile={handleReadFile}>
+      <Editor.Root
+        tree={files}
+        selectedFile="index.ts"
+        runtimeReady={!!runtime}
+        writeFile={handleWriteFile}
+        readFile={handleReadFile}
+      >
         <Editor.View />
-        <Editor.Output filepath="./dist/index.css" value={'Output will appear here...'} />
-        <Editor.Terminal onMount={handleTerminalMount} onResize={handleTerminalResize} />
+        <Editor.Panel
+          resizable
+          defaultSize={{ width: '40%' }}
+          enable={false}
+          maxWidth="80%"
+          minWidth="20%"
+          className="surimi-editor__right"
+          as="div"
+        >
+          <Editor.Output />
+          <Editor.Terminal onMount={handleTerminalMount} onResize={handleTerminalResize} />
+        </Editor.Panel>
       </Editor.Root>
     </Editor.Provider>
   );

@@ -1,40 +1,53 @@
-import MonacoEditor from '@monaco-editor/react';
 import { useEffect, useState } from 'react';
 
 import { useEditor } from '#context/editor.context';
 
-import EditorPanel from '../Panel/Panel';
+import Code from '../Code/Code';
+import Panel from '../Panel/Panel';
+
+import './Output.css';
 
 export default function EditorOutput() {
   const { state } = useEditor();
-  const [editorValue, setEditorValue] = useState<string>('');
+  const [outputValue, setOutputValue] = useState<string>('');
+  const [outputFilePath, setOutputFilePath] = useState<string>('dist/index.css');
 
   useEffect(() => {
     const getFileContent = async () => {
-      if (!state.activeFile) return undefined;
+      if (!state.compiler.outputFilePath) return undefined;
 
-      const content = await state.readFileHandler?.(state.activeFile);
-      setEditorValue(content ?? '');
+      const content = await state.readFileHandler?.(state.compiler.outputFilePath);
+      setOutputFilePath(state.compiler.outputFilePath);
+      setOutputValue(content ?? '');
     };
 
     void getFileContent();
-  }, [state.activeFile, state.readFileHandler]);
+  }, [state.compiler.outputFilePath, state.readFileHandler]);
 
   return (
-    <EditorPanel
+    <Panel
       resizable
       enable={{
-        right: true,
+        bottom: true,
       }}
       defaultSize={{
-        width: '60%',
+        height: '70%',
       }}
-      maxWidth="80%"
-      minWidth="20%"
-      className="surimi-editor__view"
+      maxHeight="90%"
+      minHeight="50%"
+      className="surimi-editor__output"
       as="div"
     >
-      <MonacoEditor className="surimi-editor__code" theme="vs-dark" path={'./dist/index.css'} value={editorValue} />
-    </EditorPanel>
+      <Code
+        value={outputValue}
+        filepath={outputFilePath}
+        onChange={() => {
+          /* unused */
+        }}
+        onMount={() => {
+          /* unused */
+        }}
+      />
+    </Panel>
   );
 }

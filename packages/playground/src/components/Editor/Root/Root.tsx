@@ -3,15 +3,15 @@ import { useEffect } from 'react';
 import { useEditor } from '#context/editor.context';
 import type { FileSystemTree, ReadFileHandler, WriteFileHandler } from '#types';
 
-import './Root.css';
-
-export interface EditorProps extends React.PropsWithChildren {
+export interface RootProps extends React.PropsWithChildren {
   tree: FileSystemTree;
+  selectedFile: string;
+  runtimeReady: boolean;
   readFile: ReadFileHandler;
   writeFile: WriteFileHandler;
 }
 
-export default function Editor({ children, tree, readFile, writeFile }: EditorProps) {
+export default function Root({ children, tree, selectedFile, runtimeReady, readFile, writeFile }: RootProps) {
   const { dispatch } = useEditor();
 
   useEffect(() => {
@@ -25,6 +25,12 @@ export default function Editor({ children, tree, readFile, writeFile }: EditorPr
   useEffect(() => {
     dispatch({ type: 'setFileTree', data: { tree: tree } });
   }, [tree]);
+
+  useEffect(() => {
+    if (runtimeReady) {
+      dispatch({ type: 'setActiveFile', data: { filepath: selectedFile } });
+    }
+  }, [runtimeReady, selectedFile]);
 
   return <div className="surimi-editor">{children}</div>;
 }

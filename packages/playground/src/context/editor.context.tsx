@@ -16,8 +16,16 @@ interface EditorProviderProps {
   children: React.ReactNode;
 }
 
+interface CompilerState {
+  state: 'idle' | 'compiling' | 'success' | 'error';
+  error: string | null;
+  outputFilePath: string | undefined;
+  duration: number | null;
+}
+
 interface State {
   activeFile: string | undefined;
+  compiler: CompilerState;
   openFiles: Array<{ filepath: string; pendingChanges: boolean }>;
   fileTree: FileSystemTree;
   readFileHandler: ReadFileHandler | undefined;
@@ -25,7 +33,13 @@ interface State {
 }
 
 const DEFAULT_STATE = {
-  activeFile: 'index.ts',
+  activeFile: undefined,
+  compiler: {
+    state: 'idle',
+    error: null,
+    outputFilePath: undefined,
+    duration: null,
+  },
   fileTree: {},
   openFiles: [],
   readFileHandler: undefined,

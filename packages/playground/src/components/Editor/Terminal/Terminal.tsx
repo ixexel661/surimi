@@ -6,6 +6,7 @@ import type { TerminalDimensions } from '#types/terminal.types.js';
 import Panel from '../Panel/Panel';
 
 import '@xterm/xterm/css/xterm.css';
+import './Terminal.css';
 
 export interface TerminalProps {
   onMount: (xterm: XTerm) => void | Promise<void>;
@@ -71,10 +72,10 @@ export default function Terminal({ onMount, onResize }: TerminalProps) {
   return (
     <Panel
       resizable
-      enable={{ top: true }}
-      defaultSize={{ height: '40%' }}
+      enable={{ top: false }}
+      defaultSize={{ height: '30%' }}
       maxHeight="50%"
-      minHeight="20%"
+      minHeight="10%"
       className="surimi-editor__terminal"
       as="div"
     >

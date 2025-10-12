@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 
 import { useEditor } from '#context/editor.context';
 
-import EditorPanel from '../Panel/Panel';
-import EditorViewCode from './Code/Code';
-import EditorViewWelcome from './Welcome/Welcome';
+import Code from '../Code/Code';
+import Panel from '../Panel/Panel';
+
+import './View.css';
 
 export default function EditorView() {
   const { state } = useEditor();
@@ -34,7 +35,7 @@ export default function EditorView() {
   };
 
   return (
-    <EditorPanel
+    <Panel
       resizable
       enable={{
         right: true,
@@ -47,18 +48,14 @@ export default function EditorView() {
       className="surimi-editor__view"
       as="div"
     >
-      {state.activeFile ? (
-        <EditorViewCode
-          value={editorValue}
-          filepath={state.activeFile}
-          onChange={handleCodeEditorChange}
-          onMount={() => {
-            /* unused */
-          }}
-        />
-      ) : (
-        <EditorViewWelcome />
-      )}
-    </EditorPanel>
+      <Code
+        value={editorValue}
+        filepath={state.activeFile ?? ''}
+        onChange={handleCodeEditorChange}
+        onMount={() => {
+          /* unused */
+        }}
+      />
+    </Panel>
   );
 }

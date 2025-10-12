@@ -1,14 +1,19 @@
 import type { OnChange, OnMount } from '@monaco-editor/react';
 import MonacoEditor from '@monaco-editor/react';
+import type { ComponentProps } from 'react';
 
-export interface EditorProps {
+const defaultEditorOptions = {
+  minimap: { enabled: false },
+} as const satisfies ComponentProps<typeof MonacoEditor>['options'];
+
+export interface CodeProps {
   value: string;
   filepath: string;
   onChange: OnChange;
   onMount: OnMount;
 }
 
-export default function EditorViewCode({ value, filepath, onChange, onMount }: EditorProps) {
+export default function Code({ value, filepath, onChange, onMount }: CodeProps) {
   const handleMount: OnMount = (editor, monaco) => {
     onMount(editor, monaco);
   };
@@ -19,6 +24,7 @@ export default function EditorViewCode({ value, filepath, onChange, onMount }: E
       theme="vs-dark"
       path={filepath}
       value={value}
+      options={defaultEditorOptions}
       onMount={handleMount}
       onChange={onChange}
     />
