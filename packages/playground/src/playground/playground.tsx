@@ -29,7 +29,7 @@ select('html').style({ backgroundColor: 'red' });
   },
   "scripts": {
     "build": "surimi compile index.ts --no-js --watch",
-    "build:initial": "surimi compile index.ts --no-js",
+    "build:initial": "surimi compile index.ts --no-js"
   }
 }`,
     },
