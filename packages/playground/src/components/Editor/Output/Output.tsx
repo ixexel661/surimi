@@ -13,15 +13,34 @@ export default function EditorOutput() {
   const [outputFilePath, setOutputFilePath] = useState<string>('dist/index.css');
 
   useEffect(() => {
-    const getFileContent = async () => {
-      if (!state.compiler.outputFilePath) return undefined;
+    if (!state.compiler.outputFilePath) return undefined;
 
-      const content = await state.readFileHandler?.(state.compiler.outputFilePath);
-      setOutputFilePath(state.compiler.outputFilePath);
-      setOutputValue(content ?? '');
-    };
+    const unwatch = state.watchFileHandler?.(
+      state.compiler.outputFilePath,
+      { persistent: false },
+      (event, filename) => {
+        console.log(`Output file event: ${event}`, filename);
+        const finalFilepath = typeof filename === 'string' ? filename : filename.toString();
 
-    void getFileContent();
+        if (event === 'change') {
+          state
+            .readFileHandler?.(finalFilepath)
+            .then(content => {
+              setOutputValue(content);
+            })
+            .catch((err: unknown) => {
+              console.error(`Failed to read output file: ${err}`);
+            });
+        } else {
+          setOutputValue('');
+          console.warn(`Output file was removed: ${finalFilepath}`);
+        }
+      },
+    );
+
+    setOutputFilePath(state.compiler.outputFilePath);
+
+    return unwatch;
   }, [state.compiler.outputFilePath, state.readFileHandler]);
 
   return (

@@ -1,26 +1,24 @@
 import * as React from 'react';
 
-import type { FileSystemTree, ReadFileHandler, WriteFileHandler } from '#types';
+import type { CompilerState, FileSystemTree, ReadFileHandler, WatchFileHandler, WriteFileHandler } from '#types';
 
 type Action =
   | {
       type: 'setActiveFile';
       data: { filepath: string };
     }
+  | {
+      type: 'setCompilerState';
+      data: { state: CompilerState };
+    }
   | { type: 'setReadFileHandler'; data: { handler: ReadFileHandler } }
   | { type: 'setWriteFileHandler'; data: { handler: WriteFileHandler } }
+  | { type: 'setWatchFileHandler'; data: { handler: WatchFileHandler } }
   | { type: 'setFileTree'; data: { tree: FileSystemTree } };
 
 type Dispatch = (action: Action) => void;
 interface EditorProviderProps {
   children: React.ReactNode;
-}
-
-interface CompilerState {
-  state: 'idle' | 'compiling' | 'success' | 'error';
-  error: string | null;
-  outputFilePath: string | undefined;
-  duration: number | null;
 }
 
 interface State {
@@ -30,6 +28,7 @@ interface State {
   fileTree: FileSystemTree;
   readFileHandler: ReadFileHandler | undefined;
   writeFileHandler: WriteFileHandler | undefined;
+  watchFileHandler: WatchFileHandler | undefined;
 }
 
 const DEFAULT_STATE = {
@@ -44,6 +43,7 @@ const DEFAULT_STATE = {
   openFiles: [],
   readFileHandler: undefined,
   writeFileHandler: undefined,
+  watchFileHandler: undefined,
 } satisfies State;
 
 const EditorStateContext = React.createContext<{ state: State; dispatch: Dispatch } | undefined>(undefined);
@@ -53,11 +53,17 @@ function editorReducer(state: State, action: Action): State {
     case 'setActiveFile': {
       return { ...state, activeFile: action.data.filepath };
     }
+    case 'setCompilerState': {
+      return { ...state, compiler: action.data.state };
+    }
     case 'setReadFileHandler': {
       return { ...state, readFileHandler: action.data.handler };
     }
     case 'setWriteFileHandler': {
       return { ...state, writeFileHandler: action.data.handler };
+    }
+    case 'setWatchFileHandler': {
+      return { ...state, watchFileHandler: action.data.handler };
     }
     case 'setFileTree': {
       return { ...state, fileTree: action.data.tree };

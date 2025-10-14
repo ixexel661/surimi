@@ -1,9 +1,9 @@
 import type { Terminal as XTerm } from '@xterm/xterm';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import * as Editor from '#components/Editor';
 import { Runtime } from '#core';
-import type { FileSystemTree, TerminalDimensions } from '#types';
+import type { FileSystemTree, TerminalDimensions, WatchCallback, WatchOptions } from '#types';
 
 import './playground.css';
 
@@ -28,7 +28,7 @@ select('html').style({ backgroundColor: 'red' });
     "@surimi/compiler": "latest"
   },
   "scripts": {
-    "build": "surimi compile index.ts --out-dir=./dist --no-js --watch"
+    "build": "NAPI_RS_FORCE_WASI=0 surimi compile index.ts --out-dir=./dist --no-js --watch"
   }
 }`,
     },
@@ -38,15 +38,44 @@ select('html').style({ backgroundColor: 'red' });
 export default function Playgroun() {
   const [runtime, setRuntime] = useState<Runtime | undefined>();
 
+  const compilerState = useMemo(() => {
+    return {
+      state: 'idle',
+      error: null,
+      outputFilePath: runtime ? 'index.css' : null,
+      duration: null,
+    } as const;
+  }, [runtime]);
+
   const handleTerminalMount = async (xterm: XTerm) => {
     const _runtime = new Runtime();
     await _runtime.init('surimi');
     await _runtime.initTerminal(xterm);
     await _runtime.mount(files);
 
+    // Initial install and build, will be used to show `loading`
+    const installProcess = await _runtime.run('pnpm', ['install', '--prefer-offline', '--ignore-scripts']);
+    void installProcess.output.pipeTo(
+      new WritableStream({
+        write: chunk => {
+          console.log(chunk);
+        },
+      }),
+    );
+    await installProcess.exit;
+    const buildProcess = await _runtime.run('pnpm', ['run', 'build']);
+    void buildProcess.output.pipeTo(
+      new WritableStream({
+        write: chunk => {
+          console.log(chunk);
+        },
+      }),
+    );
+    await buildProcess.exit;
+
     setRuntime(_runtime);
 
-    xterm.input('pnpm install && pnpm run build\n');
+    xterm.input('pnpm run build\n');
   };
 
   const handleWriteFile = async (filepath: string, content: string | undefined) => {
@@ -65,6 +94,16 @@ export default function Playgroun() {
     }
   };
 
+  const handleWatchFile = (filepath: string, options: WatchOptions, callback: WatchCallback): (() => void) => {
+    if (!runtime) throw new Error('Runtime not yet initialized');
+
+    const watcher = runtime.watch(filepath, options, callback);
+
+    return () => {
+      watcher.close();
+    };
+  };
+
   const handleTerminalResize = (meta: TerminalDimensions) => {
     runtime?.terminal?.setMetadata(meta);
   };
@@ -75,8 +114,10 @@ export default function Playgroun() {
         tree={files}
         selectedFile="index.ts"
         runtimeReady={!!runtime}
+        compiler={compilerState}
         writeFile={handleWriteFile}
         readFile={handleReadFile}
+        watchFile={handleWatchFile}
       >
         <Editor.View />
         <Editor.Panel

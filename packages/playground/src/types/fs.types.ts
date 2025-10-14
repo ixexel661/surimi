@@ -1,3 +1,5 @@
+import type { FSWatchCallback, FSWatchOptions } from '@webcontainer/api';
+
 /**
  * These files make it possible for the editor to interact with a "file system".
  * This is NOT tightly coupled to whatever webcontainers, nodejs etc. are doing, but instead aims for a simple interface.
@@ -56,3 +58,9 @@ export type ReadFileHandler = (filepath: string) => Promise<string>;
 
 /** Handles write operations triggered by the editor. Currently only supports strings, might be extended to support Binary formats later */
 export type WriteFileHandler = (filepath: string, content: string) => Promise<void>;
+
+export type WatchOptions = FSWatchOptions;
+
+export type WatchCallback = FSWatchCallback;
+
+export type WatchFileHandler = (filepath: string, options: WatchOptions, callback: WatchCallback) => () => void;

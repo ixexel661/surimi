@@ -53,6 +53,12 @@ export default class Runtime {
     return this._instance.fs.watch(path, options, listener);
   }
 
+  public run(command: string, args: string[] = []) {
+    if (!this._instance) throw new Error('Instance not initialized');
+
+    return this._instance.spawn(command, args);
+  }
+
   public async writeFile(path: string, content: string) {
     if (!this._instance) throw new Error('Instance not initialized');
 
