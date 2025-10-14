@@ -2,29 +2,32 @@ import clsx from 'clsx';
 import type { ResizableProps } from 're-resizable';
 import { Resizable } from 're-resizable';
 
+import { useEditor } from '#context/editor.context';
+
 import './Panel.css';
 
-export type PanelProps =
+interface PanelBaseProps {
+  hideOverlay?: boolean;
+}
+
+export type PanelProps = (
   | ({
       resizable: true;
     } & ResizableProps & { as: keyof React.JSX.IntrinsicElements })
-  | ({ resizable: false } & React.ComponentProps<'div'>);
+  | ({ resizable: false } & React.ComponentProps<'div'>)
+) &
+  PanelBaseProps;
 
-export default function Panel({ className, children, ...props }: PanelProps) {
-  if (props.resizable) {
-    const { resizable, ...rest } = props;
-    return (
-      <Resizable className={clsx('surimi-editor__panel', className)} {...rest}>
-        {children}
-      </Resizable>
-    );
-  } else {
-    const { resizable, ...rest } = props;
+export default function Panel({ className, children, hideOverlay, ...props }: PanelProps) {
+  const { state } = useEditor();
+  const { resizable, ...rest } = props;
 
-    return (
-      <div className={clsx('surimi-editor__panel', className)} {...rest}>
-        {children}
-      </div>
-    );
-  }
+  const ContainerElement = resizable ? Resizable : 'div';
+
+  return (
+    <ContainerElement className={clsx('surimi-editor__panel', className)} {...rest}>
+      {children}
+      {!state.ready && !hideOverlay && <div className="surimi-editor__panel-overlay" />}
+    </ContainerElement>
+  );
 }

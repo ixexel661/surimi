@@ -1,15 +1,19 @@
 import { select } from 'surimi';
 
-const container = select('.surimi-editor').style({
+const container = select('.surimi-playground').style({
   height: 'calc(100% - 4rem)',
-  display: 'flex',
-  flexDirection: 'row',
-  position: 'relative',
-  gap: '1rem',
   padding: '1rem',
+  position: 'relative',
 });
 
-container.descendant('.surimi-editor__right').style({
+const editor = select('.surimi-editor').style({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '1rem',
+});
+
+editor.descendant('.surimi-editor__right').style({
   display: 'flex',
   flexDirection: 'column',
   flex: 1,

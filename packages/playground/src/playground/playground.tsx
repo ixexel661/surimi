@@ -10,26 +10,31 @@ import './playground.css';
 const files = {
   'index.ts': {
     file: {
-      contents: `
+      contents: `\
 import { select } from "surimi";
 
 select('html').style({ backgroundColor: 'red' });
 `,
     },
   },
+  'index.css': {
+    file: {
+      contents: '// The output will appear here',
+    },
+  },
   'package.json': {
     file: {
-      contents: `
+      contents: `\
 {
   "name": "surimi-playground-app",
   "type": "module",
   "dependencies": {
     "surimi": "latest",
-    "@surimi/compiler": "latest"
+    "@surimi/compiler": "latest",
+    "@rolldown/binding-wasm32-wasi": "latest"
   },
   "scripts": {
-    "build": "surimi compile index.ts --no-js --watch",
-    "build:initial": "surimi compile index.ts --no-js"
+    "build": "surimi compile index.ts --no-js --watch"
   }
 }`,
     },
@@ -38,6 +43,7 @@ select('html').style({ backgroundColor: 'red' });
 
 export default function Playgroun() {
   const [runtime, setRuntime] = useState<Runtime | undefined>();
+  const [status, setStatus] = useState<string | null>('Loading...');
 
   const compilerState = useMemo(() => {
     return {
@@ -50,33 +56,29 @@ export default function Playgroun() {
 
   const handleTerminalMount = async (xterm: XTerm) => {
     const _runtime = new Runtime();
+    setStatus('Initializing web container...');
     await _runtime.init('surimi');
+    setStatus('Initializing terminal...');
     await _runtime.initTerminal(xterm);
+    setStatus('Mounting files...');
     await _runtime.mount(files);
-
-    // Initial install and build, will be used to show `loading`
-    const installProcess = await _runtime.run('pnpm', ['install', '--prefer-offline', '--ignore-scripts']);
-    void installProcess.output.pipeTo(
-      new WritableStream({
-        write: chunk => {
-          console.log(chunk);
-        },
-      }),
-    );
-    await installProcess.exit;
-    const buildProcess = await _runtime.run('pnpm', ['run', 'build:initial']);
-    void buildProcess.output.pipeTo(
-      new WritableStream({
-        write: chunk => {
-          console.log(chunk);
-        },
-      }),
-    );
-    await buildProcess.exit;
 
     setRuntime(_runtime);
 
-    xterm.input('pnpm run build\n');
+    setStatus('Installing dependencies...');
+    await _runtime.terminal?.command('pnpm', ['install', '--prefer-offline']);
+
+    setStatus('Starting build in watch mode...');
+    await _runtime.terminal?.command('export', ['NODE_NO_WARNINGS=1']);
+    await _runtime.terminal?.command('clear');
+    void _runtime.terminal?.command('pnpm', ['run', 'build']);
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    setStatus('Done! Enabling editors and terminal...');
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    setStatus(null);
   };
 
   const handleWriteFile = async (filepath: string, content: string | undefined) => {
@@ -109,15 +111,29 @@ export default function Playgroun() {
     runtime?.terminal?.setMetadata(meta);
   };
 
+  const handleRestartCompiler = () => {
+    runtime?.terminal
+      ?.write('\x03')
+      .then(async () => {
+        console.log('done');
+        await runtime.terminal?.command('clear');
+        void runtime.terminal?.command('pnpm', ['run', 'build']);
+      })
+      .catch((err: unknown) => {
+        console.log(err);
+      });
+  };
+
   return (
-    <div className="playground-container">
+    <div className="surimi-playground">
       <Editor.Provider>
-        <h1>Playground</h1>
+        <Editor.Header disabled={status !== null} onRestartCompiler={handleRestartCompiler} />
 
         <Editor.Root
           tree={files}
           selectedFile="index.ts"
-          runtimeReady={!!runtime}
+          status={status ?? 'Done'}
+          ready={status === null}
           compiler={compilerState}
           writeFile={handleWriteFile}
           readFile={handleReadFile}
@@ -126,6 +142,7 @@ export default function Playgroun() {
           <Editor.View />
           <Editor.Panel
             resizable
+            hideOverlay
             defaultSize={{ width: '40%' }}
             enable={false}
             maxWidth="80%"

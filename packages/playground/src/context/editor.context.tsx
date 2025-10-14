@@ -4,6 +4,14 @@ import type { CompilerState, FileSystemTree, ReadFileHandler, WatchFileHandler, 
 
 type Action =
   | {
+      type: 'setReady';
+      data: { ready: boolean };
+    }
+  | {
+      type: 'setStatus';
+      data: { status: string };
+    }
+  | {
       type: 'setActiveFile';
       data: { filepath: string };
     }
@@ -22,6 +30,8 @@ interface EditorProviderProps {
 }
 
 interface State {
+  ready: boolean;
+  status: string;
   activeFile: string | undefined;
   compiler: CompilerState;
   openFiles: Array<{ filepath: string; pendingChanges: boolean }>;
@@ -32,11 +42,13 @@ interface State {
 }
 
 const DEFAULT_STATE = {
+  ready: false,
+  status: 'Loading...',
   activeFile: undefined,
   compiler: {
     state: 'idle',
     error: null,
-    outputFilePath: undefined,
+    outputFilePath: null,
     duration: null,
   },
   fileTree: {},
@@ -50,6 +62,12 @@ const EditorStateContext = React.createContext<{ state: State; dispatch: Dispatc
 
 function editorReducer(state: State, action: Action): State {
   switch (action.type) {
+    case 'setReady': {
+      return { ...state, ready: action.data.ready };
+    }
+    case 'setStatus': {
+      return { ...state, status: action.data.status };
+    }
     case 'setActiveFile': {
       return { ...state, activeFile: action.data.filepath };
     }

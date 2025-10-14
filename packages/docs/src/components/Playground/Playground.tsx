@@ -3,5 +3,9 @@ import { Playground } from '@surimi/playground';
 import './Playground.css';
 
 export default function PlaygroundPage() {
-  return <Playground />;
+  return (
+    <div className="surimi-playground-container">
+      <Playground />
+    </div>
+  );
 }

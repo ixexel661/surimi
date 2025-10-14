@@ -50,7 +50,7 @@ export default function EditorOutput() {
         bottom: true,
       }}
       defaultSize={{
-        height: '70%',
+        height: '60%',
       }}
       handleStyles={{ bottom: { height: '3px' } }}
       handleClasses={{ bottom: 'resizable-handle-bottom' }}
@@ -62,6 +62,7 @@ export default function EditorOutput() {
       <Code
         value={outputValue}
         filepath={outputFilePath}
+        options={{ readOnly: true }}
         onChange={() => {
           /* unused */
         }}

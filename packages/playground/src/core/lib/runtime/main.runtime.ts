@@ -10,6 +10,7 @@ export default class Runtime {
   protected _instance: WebContainer | undefined;
 
   public terminal: Terminal | undefined;
+  public xterm: XTerm | undefined;
 
   /**
    * Initialize the runtime. This does not mount anything, nor does it create a terminal.
@@ -53,12 +54,6 @@ export default class Runtime {
     return this._instance.fs.watch(path, options, listener);
   }
 
-  public run(command: string, args: string[] = []) {
-    if (!this._instance) throw new Error('Instance not initialized');
-
-    return this._instance.spawn(command, args);
-  }
-
   public async writeFile(path: string, content: string) {
     if (!this._instance) throw new Error('Instance not initialized');
 
@@ -79,6 +74,7 @@ export default class Runtime {
     if (!this._instance) throw new Error('Instance not initialized');
 
     this.terminal = new Terminal(this._instance);
+    this.xterm = xterm;
 
     const terminalReady = Promise.withResolvers<void>();
     let isInteractive = false;
