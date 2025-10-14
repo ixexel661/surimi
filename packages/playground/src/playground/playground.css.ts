@@ -1,15 +1,24 @@
 import { select } from 'surimi';
 
-const container = select('.surimi-editor').style({
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'row',
+const container = select('.surimi-playground').style({
+  height: 'calc(100% - 4rem)',
+  padding: '1rem',
   position: 'relative',
 });
 
-container.descendant('.surimi-editor__right').style({
+const editor = select('.surimi-editor').style({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '1rem',
+});
+
+editor.descendant('.surimi-editor__right').style({
   display: 'flex',
   flexDirection: 'column',
-  position: 'relative',
-  flexGrow: 1,
+  flex: 1,
+  gap: '1rem',
+  // override panel style to make "invisible" panel
+  border: 'none',
+  padding: 0,
 });

@@ -6,7 +6,8 @@ import type { CompilerState, FileSystemTree, ReadFileHandler, WatchFileHandler, 
 export interface RootProps extends React.PropsWithChildren {
   tree: FileSystemTree;
   selectedFile: string;
-  runtimeReady: boolean;
+  ready: boolean;
+  status: string;
   compiler: CompilerState;
   readFile: ReadFileHandler;
   watchFile: WatchFileHandler;
@@ -16,14 +17,19 @@ export interface RootProps extends React.PropsWithChildren {
 export default function Root({
   children,
   tree,
+  status,
   selectedFile,
-  runtimeReady,
+  ready,
   compiler,
   readFile,
   writeFile,
   watchFile,
 }: RootProps) {
   const { dispatch } = useEditor();
+
+  useEffect(() => {
+    dispatch({ type: 'setStatus', data: { status } });
+  }, [status]);
 
   useEffect(() => {
     dispatch({ type: 'setCompilerState', data: { state: compiler } });
@@ -46,10 +52,12 @@ export default function Root({
   }, [tree]);
 
   useEffect(() => {
-    if (runtimeReady) {
-      dispatch({ type: 'setActiveFile', data: { filepath: selectedFile } });
-    }
-  }, [runtimeReady, selectedFile]);
+    dispatch({ type: 'setReady', data: { ready } });
+  }, [ready]);
+
+  useEffect(() => {
+    dispatch({ type: 'setActiveFile', data: { filepath: selectedFile } });
+  }, [selectedFile]);
 
   return <div className="surimi-editor">{children}</div>;
 }

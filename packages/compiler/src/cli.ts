@@ -153,7 +153,7 @@ async function runCompile(options: CLIOptions) {
     intro('🍣 @surimi/compiler');
     const s = spinner();
     const filename = basename(inputPath);
-    let lastCompileTime: number | null = null;
+    let initialCompileTime: number | null = null;
 
     if (options.watch) {
       log.info(`ℹ️  Running in watch mode. Press 'q' to quit.`);
@@ -162,14 +162,15 @@ async function runCompile(options: CLIOptions) {
     s.start(`${options.watch ? 'Watching' : 'Compiling'} ${filename}...`);
 
     const compileAndLog = async () => {
-      const startTimer = Date.now();
       try {
+        const startTimer = Date.now();
         const result = await compile({
           inputPath,
           cwd,
           include,
           exclude,
         });
+        const endTimer = Date.now();
 
         if (!result) {
           s.stop('❌ Compilation failed: No result returned');
@@ -187,18 +188,15 @@ async function runCompile(options: CLIOptions) {
           await writeFile(outputPaths.js, result.js, 'utf8');
         }
 
-        const endTimer = Date.now();
         const durationMs = endTimer - startTimer;
         s.message(`✅ Compilation complete in ${String(durationMs)}ms`);
         return durationMs;
       } catch (error) {
-        cancel(`❌ Compilation failed: ${error instanceof Error ? error.message : String(error)}`);
+        s.message(`❌ ${error instanceof Error ? error.message : String(error)}`);
       }
 
       return null;
     };
-
-    lastCompileTime = await compileAndLog();
 
     if (options.watch) {
       await new Promise<void>(resolve => {
@@ -256,11 +254,15 @@ async function runCompile(options: CLIOptions) {
         }
 
         const onChange = () => {
-          s.message(`✅ Compilation done in ${String(lastCompileTime)}ms`);
-          void compileAndLog().then(() => {
-            setTimeout(() => {
-              s.message(`🔍 Watching ${filename}...`);
-            }, 1000);
+          s.message(`✅ Compilation done in ${initialCompileTime}ms`);
+          void compileAndLog().then(time => {
+            // if the last compilation was successfull, show the watching message
+            // Else, we continue showing the error.
+            if (time) {
+              setTimeout(() => {
+                s.message(`🔍 Watching ${filename}...`);
+              }, 1000);
+            }
           });
         };
 
@@ -279,10 +281,16 @@ async function runCompile(options: CLIOptions) {
         });
       });
     } else {
-      s.stop(`✅ Compilation completed in ${String(lastCompileTime)}ms`);
+      initialCompileTime = await compileAndLog();
+
+      if (initialCompileTime) {
+        s.stop(`✅ Compilation completed in ${String(initialCompileTime)}ms`);
+      } else {
+        s.stop('❌ Compilation failed due to errors above');
+      }
     }
 
-    outro(`👋 Thanks for using surimi`);
+    outro(`👋 Thanks for using surimi${initialCompileTime == null ? ", and sorry it didn't work this time :(" : ''}`);
   } catch (error) {
     cancel(`Compilation failed: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);

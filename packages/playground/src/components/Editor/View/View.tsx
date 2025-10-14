@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import Loader from '#components/Loader/Loader';
 import { useEditor } from '#context/editor.context';
 
 import Code from '../Code/Code';
@@ -43,6 +44,8 @@ export default function EditorView() {
       defaultSize={{
         width: '60%',
       }}
+      handleStyles={{ right: { width: '3px' } }}
+      handleClasses={{ right: 'resizable-handle-right' }}
       maxWidth="80%"
       minWidth="20%"
       className="surimi-editor__view"
@@ -56,6 +59,13 @@ export default function EditorView() {
           /* unused */
         }}
       />
+
+      {!state.ready && state.status && (
+        <div className="surimi-editor__view-overlay">
+          <Loader />
+          <div className="surimi-editor__view-status">{state.status}</div>
+        </div>
+      )}
     </Panel>
   );
 }

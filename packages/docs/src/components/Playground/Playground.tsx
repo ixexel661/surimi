@@ -1,10 +1,10 @@
 import { Playground } from '@surimi/playground';
 
-import './playground.css';
+import './Playground.css';
 
 export default function PlaygroundPage() {
   return (
-    <div className="playground-container">
+    <div className="surimi-playground-container">
       <Playground />
     </div>
   );

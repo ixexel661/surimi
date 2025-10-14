@@ -96,7 +96,15 @@ async function execute(code: string): Promise<{ css: string; js: string }> {
 
     return { css, js };
   } catch (error) {
-    console.error('Error executing Surimi code:', error);
+    if (error instanceof Error) {
+      const message = error.message || String(error);
+      if (message.includes('from "data:')) {
+        // We suppress the ugly data URL in the error message
+        const strippedMessage = message.replace(/("data:[^ ]+)/g, '<surimi-module>');
+        throw new Error(`Failed to build surimi output: ${strippedMessage}`);
+      }
+    }
+
     throw error;
   }
 }

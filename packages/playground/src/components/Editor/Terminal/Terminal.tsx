@@ -37,7 +37,18 @@ export default function Terminal({ onMount, onResize }: TerminalProps) {
         convertEol: true,
         fontFamily: 'IBM Plex Mono, courier-new, courier, monospace',
         theme: {
-          background: '#1e1e1e',
+          foreground: '#383a42',
+          background: '#ffffff',
+          cursor: '#bfceff',
+          black: '#383a42',
+          red: '#e45649',
+          green: '#50a14f',
+          yellow: '#c18401',
+          blue: '#4078f2',
+          magenta: '#a626a4',
+          cyan: '#0184bc',
+          white: '#a0a1a7',
+          brightBlack: '#696c77',
         },
       });
 
@@ -73,7 +84,7 @@ export default function Terminal({ onMount, onResize }: TerminalProps) {
     <Panel
       resizable
       enable={{ top: false }}
-      defaultSize={{ height: '30%' }}
+      defaultSize={{ height: '40%' }}
       maxHeight="50%"
       minHeight="10%"
       className="surimi-editor__terminal"
