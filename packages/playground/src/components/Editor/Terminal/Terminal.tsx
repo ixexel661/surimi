@@ -73,7 +73,7 @@ export default function Terminal({ onMount, onResize }: TerminalProps) {
     <Panel
       resizable
       enable={{ top: false }}
-      defaultSize={{ height: '30%' }}
+      defaultSize={{ height: '50%' }}
       maxHeight="50%"
       minHeight="10%"
       className="surimi-editor__terminal"

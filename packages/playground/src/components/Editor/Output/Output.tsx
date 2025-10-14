@@ -52,6 +52,8 @@ export default function EditorOutput() {
       defaultSize={{
         height: '70%',
       }}
+      handleStyles={{ bottom: { height: '3px' } }}
+      handleClasses={{ bottom: 'resizable-handle-bottom' }}
       maxHeight="90%"
       minHeight="50%"
       className="surimi-editor__output"

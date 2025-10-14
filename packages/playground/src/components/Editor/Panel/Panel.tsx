@@ -2,6 +2,8 @@ import clsx from 'clsx';
 import type { ResizableProps } from 're-resizable';
 import { Resizable } from 're-resizable';
 
+import './Panel.css';
+
 export type PanelProps =
   | ({
       resizable: true;

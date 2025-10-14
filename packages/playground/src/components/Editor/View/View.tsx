@@ -43,6 +43,8 @@ export default function EditorView() {
       defaultSize={{
         width: '60%',
       }}
+      handleStyles={{ right: { width: '3px' } }}
+      handleClasses={{ right: 'resizable-handle-right' }}
       maxWidth="80%"
       minWidth="20%"
       className="surimi-editor__view"

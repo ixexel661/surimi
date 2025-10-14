@@ -110,30 +110,34 @@ export default function Playgroun() {
   };
 
   return (
-    <Editor.Provider>
-      <Editor.Root
-        tree={files}
-        selectedFile="index.ts"
-        runtimeReady={!!runtime}
-        compiler={compilerState}
-        writeFile={handleWriteFile}
-        readFile={handleReadFile}
-        watchFile={handleWatchFile}
-      >
-        <Editor.View />
-        <Editor.Panel
-          resizable
-          defaultSize={{ width: '40%' }}
-          enable={false}
-          maxWidth="80%"
-          minWidth="20%"
-          className="surimi-editor__right"
-          as="div"
+    <div className="playground-container">
+      <Editor.Provider>
+        <h1>Playground</h1>
+
+        <Editor.Root
+          tree={files}
+          selectedFile="index.ts"
+          runtimeReady={!!runtime}
+          compiler={compilerState}
+          writeFile={handleWriteFile}
+          readFile={handleReadFile}
+          watchFile={handleWatchFile}
         >
-          <Editor.Output />
-          <Editor.Terminal onMount={handleTerminalMount} onResize={handleTerminalResize} />
-        </Editor.Panel>
-      </Editor.Root>
-    </Editor.Provider>
+          <Editor.View />
+          <Editor.Panel
+            resizable
+            defaultSize={{ width: '40%' }}
+            enable={false}
+            maxWidth="80%"
+            minWidth="20%"
+            className="surimi-editor__right"
+            as="div"
+          >
+            <Editor.Output />
+            <Editor.Terminal onMount={handleTerminalMount} onResize={handleTerminalResize} />
+          </Editor.Panel>
+        </Editor.Root>
+      </Editor.Provider>
+    </div>
   );
 }

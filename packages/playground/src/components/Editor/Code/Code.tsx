@@ -21,7 +21,6 @@ export default function Code({ value, filepath, onChange, onMount }: CodeProps) 
   return (
     <MonacoEditor
       className="surimi-editor__code"
-      theme="vs-dark"
       path={filepath}
       value={value}
       options={defaultEditorOptions}
