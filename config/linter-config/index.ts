@@ -1,10 +1,10 @@
 import eslint from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
-import type { ConfigArray } from 'typescript-eslint';
+import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
-export const baseConfig: ConfigArray = tseslint.config(
+export const baseConfig: ReturnType<typeof defineConfig> = defineConfig(
   eslint.configs.recommended,
   tseslint.configs.stylisticTypeChecked,
   tseslint.configs.strictTypeChecked,
@@ -40,6 +40,7 @@ export const baseConfig: ConfigArray = tseslint.config(
           default: 'array-simple',
         },
       ],
+      // It might have downsides, but I tend to just wrap numbers in template literals in `String()`, so no difference.
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       // For the rule details, see https://typescript-eslint.io/rules/no-unused-vars/
       // For the configuration, see https://eslint.org/docs/latest/rules/no-unused-vars
@@ -68,13 +69,14 @@ export const baseConfig: ConfigArray = tseslint.config(
   },
 );
 
-export const reactConfig: ConfigArray = tseslint.config(
-  ...baseConfig,
+export const reactConfig: ReturnType<typeof defineConfig> = defineConfig(
+  baseConfig,
   // @ts-expect-error https://github.com/jsx-eslint/eslint-plugin-react/issues/3878
   react.configs.flat.recommended,
   react.configs.flat['jsx-runtime'],
   reactHooks.configs['recommended-latest'],
 );
 
-export { eslint, tseslint };
-export type { ConfigArray };
+// Utility exports for easier consumption in other configs
+export { eslint, tseslint, defineConfig };
+export type Config = ReturnType<typeof defineConfig>;

@@ -1,5 +1,5 @@
 {
-  "extends": ["astro/tsconfigs/strict", "@janis.me/typescript-config/react.json"],
+  "extends": ["astro/tsconfigs/strict", "@surimi/typescript-config/react.json"],
   "include": [".astro/types.d.ts", "src"],
   "exclude": ["dist"],
   "compilerOptions": {

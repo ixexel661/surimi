@@ -1,5 +1,5 @@
 {
-  "name": "@janis.me/repo-starter",
+  "name": "@surimi/repo-starter",
   "description": "A starter template for pnpm-based web repositories",
   "keywords": [
     "janis.me"
@@ -15,15 +15,15 @@
     "deps": "pnpm taze",
     "examples": "pnpm build && concurrently \"pnpm build:watch\" \"pnpm -r dev\"",
     "format": "prettier --write .",
-    "lint": "eslint --flag unstable_config_lookup_from_file .",
+    "lint": "eslint --flag v10_config_lookup_from_file .",
     "publish-ci": "jiti ./scripts/publish-ci.ts",
     "test": "vitest"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "catalog:format",
-    "@janis.me/linter-config": "workspace:*",
-    "@janis.me/typescript-config": "workspace:*",
     "@playwright/test": "catalog:test",
+    "@surimi/linter-config": "workspace:*",
+    "@surimi/typescript-config": "workspace:*",
     "@types/node": "catalog:types",
     "@vitest/browser": "catalog:test",
     "@vitest/ui": "catalog:test",

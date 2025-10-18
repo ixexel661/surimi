@@ -33,7 +33,7 @@ Reference catalog dependencies as `"package": "catalog:category"` in package.jso
 
 ### TypeScript Configuration
 
-- Extends strict TypeScript settings from `@janis.me/typescript-config/base.json`
+- Extends strict TypeScript settings from `@surimi/typescript-config/base.json`
 - Uses `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` for extra type safety
 - Module resolution set to "bundler" for modern build tools
 

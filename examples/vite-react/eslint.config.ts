@@ -1,3 +1,3 @@
-import { reactConfig } from '@janis.me/linter-config';
+import { reactConfig } from '@surimi/linter-config';
 
 export default reactConfig;

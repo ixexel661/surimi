@@ -8,7 +8,7 @@
     "css-in-js"
   ],
   "license": "MIT",
-  "author": "Janis Jansen <oss@janis.me>",
+  "author": "Janis Jansen <oss@surimi>",
   "type": "module",
   "imports": {
     "#*": [
@@ -43,8 +43,8 @@
     "rolldown": "catalog:build"
   },
   "devDependencies": {
-    "@janis.me/linter-config": "workspace:*",
-    "@janis.me/typescript-config": "workspace:*",
+    "@surimi/linter-config": "workspace:*",
+    "@surimi/typescript-config": "workspace:*",
     "@types/node": "catalog:types",
     "chokidar": "^4.0.3",
     "tsdown": "catalog:build",

@@ -124,15 +124,15 @@ importers:
       '@ianvs/prettier-plugin-sort-imports':
         specifier: catalog:format
         version: 4.7.0(prettier@3.6.2)
-      '@janis.me/linter-config':
-        specifier: workspace:*
-        version: link:packages/linter-config
-      '@janis.me/typescript-config':
-        specifier: workspace:*
-        version: link:packages/typescript-config
       '@playwright/test':
         specifier: catalog:test
         version: 1.56.0
+      '@surimi/linter-config':
+        specifier: workspace:*
+        version: link:config/linter-config
+      '@surimi/typescript-config':
+        specifier: workspace:*
+        version: link:config/typescript-config
       '@types/node':
         specifier: catalog:types
         version: 22.18.10
@@ -170,17 +170,46 @@ importers:
         specifier: catalog:test
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.10)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.1)
 
+  config/linter-config:
+    devDependencies:
+      '@eslint/js':
+        specifier: catalog:lint
+        version: 9.37.0
+      '@surimi/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: catalog:types
+        version: 22.18.10
+      eslint:
+        specifier: catalog:lint
+        version: 9.37.0(jiti@2.6.1)
+      eslint-plugin-react:
+        specifier: catalog:lint
+        version: 7.37.5(eslint@9.37.0(jiti@2.6.1))
+      eslint-plugin-react-hooks:
+        specifier: catalog:lint
+        version: 5.2.0(eslint@9.37.0(jiti@2.6.1))
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
+      typescript-eslint:
+        specifier: catalog:lint
+        version: 8.46.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
+
+  config/typescript-config: {}
+
   examples/compiler-manual:
     devDependencies:
-      '@janis.me/linter-config':
-        specifier: workspace:*
-        version: link:../../packages/linter-config
-      '@janis.me/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
       '@surimi/compiler':
         specifier: workspace:*
         version: link:../../packages/compiler
+      '@surimi/linter-config':
+        specifier: workspace:*
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
       surimi:
         specifier: workspace:*
         version: link:../../packages/surimi
@@ -197,12 +226,12 @@ importers:
         specifier: ^19.1.1
         version: 19.1.1(react@19.1.1)
     devDependencies:
-      '@janis.me/linter-config':
+      '@surimi/linter-config':
         specifier: workspace:*
-        version: link:../../packages/linter-config
-      '@janis.me/typescript-config':
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
         specifier: workspace:*
-        version: link:../../packages/typescript-config
+        version: link:../../config/typescript-config
       '@types/react':
         specifier: ^19.1.15
         version: 19.1.15
@@ -224,12 +253,12 @@ importers:
 
   examples/vite-simple:
     devDependencies:
-      '@janis.me/linter-config':
+      '@surimi/linter-config':
         specifier: workspace:*
-        version: link:../../packages/linter-config
-      '@janis.me/typescript-config':
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
         specifier: workspace:*
-        version: link:../../packages/typescript-config
+        version: link:../../config/typescript-config
       surimi:
         specifier: workspace:*
         version: link:../../packages/surimi
@@ -255,12 +284,12 @@ importers:
         specifier: workspace:*
         version: link:../surimi
     devDependencies:
-      '@janis.me/linter-config':
+      '@surimi/linter-config':
         specifier: workspace:*
-        version: link:../linter-config
-      '@janis.me/typescript-config':
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
         specifier: workspace:*
-        version: link:../typescript-config
+        version: link:../../config/typescript-config
       '@types/node':
         specifier: catalog:types
         version: 22.18.10
@@ -310,12 +339,12 @@ importers:
       '@fortawesome/free-solid-svg-icons':
         specifier: catalog:docs
         version: 6.7.2
-      '@janis.me/linter-config':
+      '@surimi/linter-config':
         specifier: workspace:*
-        version: link:../linter-config
-      '@janis.me/typescript-config':
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
         specifier: workspace:*
-        version: link:../typescript-config
+        version: link:../../config/typescript-config
       '@types/node':
         specifier: catalog:types
         version: 22.18.10
@@ -349,33 +378,6 @@ importers:
       vite-plugin-surimi:
         specifier: workspace:*
         version: link:../vite-plugin-surimi
-
-  packages/linter-config:
-    devDependencies:
-      '@eslint/js':
-        specifier: catalog:lint
-        version: 9.37.0
-      '@janis.me/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: catalog:types
-        version: 22.18.10
-      eslint:
-        specifier: catalog:lint
-        version: 9.37.0(jiti@2.6.1)
-      eslint-plugin-react:
-        specifier: catalog:lint
-        version: 7.37.5(eslint@9.37.0(jiti@2.6.1))
-      eslint-plugin-react-hooks:
-        specifier: catalog:lint
-        version: 5.2.0(eslint@9.37.0(jiti@2.6.1))
-      typescript:
-        specifier: catalog:build
-        version: 5.9.3
-      typescript-eslint:
-        specifier: catalog:lint
-        version: 8.46.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
 
   packages/playground:
     dependencies:
@@ -432,17 +434,21 @@ importers:
         specifier: catalog:prod
         version: 8.5.6
     devDependencies:
-      '@janis.me/linter-config':
+      '@surimi/linter-config':
         specifier: workspace:*
-        version: link:../linter-config
-      '@janis.me/typescript-config':
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
         specifier: workspace:*
-        version: link:../typescript-config
+        version: link:../../config/typescript-config
+      ts-mixer:
+        specifier: ^6.0.4
+        version: 6.0.4
       tsdown:
         specifier: catalog:build
         version: 0.15.7(typescript@5.9.3)
-
-  packages/typescript-config: {}
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
 
   packages/vite-plugin-surimi:
     dependencies:
@@ -453,12 +459,12 @@ importers:
         specifier: workspace:*
         version: link:../surimi
     devDependencies:
-      '@janis.me/linter-config':
+      '@surimi/linter-config':
         specifier: workspace:*
-        version: link:../linter-config
-      '@janis.me/typescript-config':
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
         specifier: workspace:*
-        version: link:../typescript-config
+        version: link:../../config/typescript-config
       '@types/node':
         specifier: catalog:types
         version: 22.18.10
@@ -3755,6 +3761,9 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4'
 
+  ts-mixer@6.0.4:
+    resolution: {integrity: sha512-ufKpbmrugz5Aou4wcr5Wc1UUFWOLhq+Fm6qa6P0w0K5Qw2yhaUoiWszhCVuNQyNwrlGiscHOmqYoAox1PtvgjA==}
+
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
     engines: {node: ^18 || >=20}
@@ -5027,7 +5036,7 @@ snapshots:
 
   '@types/fontkit@2.0.8':
     dependencies:
-      '@types/node': 22.18.10
+      '@types/node': 24.7.1
 
   '@types/hast@3.0.4':
     dependencies:
@@ -5054,7 +5063,6 @@ snapshots:
   '@types/node@24.7.1':
     dependencies:
       undici-types: 7.14.0
-    optional: true
 
   '@types/react-dom@19.1.9(@types/react@19.1.15)':
     dependencies:
@@ -5147,7 +5155,7 @@ snapshots:
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.7.2
+      semver: 7.7.3
       ts-api-utils: 2.1.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -8219,6 +8227,8 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
+  ts-mixer@6.0.4: {}
+
   tsconfck@3.1.6(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
@@ -8324,8 +8334,7 @@ snapshots:
 
   undici-types@6.21.0: {}
 
-  undici-types@7.14.0:
-    optional: true
+  undici-types@7.14.0: {}
 
   unicode-properties@1.4.1:
     dependencies:
