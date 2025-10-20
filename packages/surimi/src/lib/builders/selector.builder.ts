@@ -2,7 +2,8 @@ import { mix } from 'ts-mixer';
 
 import { CoreBuilder } from './core.builder';
 import { WithNavigation, WithPseudoClasses, WithPseudoElements, WithStyling } from './mixins';
-import type { ExtractBuildContextFromString } from '#types/builder.types';
+import type { ExtractBuildContextFromString, GetParentSelector } from '#types/builder.types';
+import { ValidSelector } from '#types/selector.types';
 
 export interface SelectorBuilder<T extends string>
   extends WithNavigation<T>,

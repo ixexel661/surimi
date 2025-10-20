@@ -11,29 +11,28 @@ import type { JoinSelectors } from '#types/selector.types';
 /**
  * Combine multiple selectors and pseudoElements / pseudoClasses into a single selector string.
  *
- * Also splits up groups and applies all child selectors, classes etc. to each item of a group.
- *
- * Note, that the order of pseudo-classes and pseudo-elements matters in CSS.
- * If users constructed something like `.button:active::after:hover`, it will be combined as `.button:hover:active::after`.
+ * Processes items in the order they appear, applying pseudo-classes and pseudo-elements
+ * to the most recent selector. This ensures proper CSS selector structure.
  *
  * @example
  * ```typescript
  * combineSelectors([
- *   { selector: '.button, #link' },
- *   { pseudoClass: 'hover' },
- *   { pseudoElement: 'after' },
+ *   { selector: '.form' },
+ *   { selector: 'input', relation: 'child' },
+ *   { pseudoClass: 'first-child' },
+ *   { selector: '.label', relation: 'adjacent' },
  * ]);
- * // Returns: '.button:hover::after, #link:hover::after'
+ * // Returns: '.form > input:first-child + .label'
  * ```
  *
  * @example
  * ```typescript
  * combineSelectors([
- *   { selector: 'div' },
- *   { pseudoClass: 'first-child' },
- *   { pseudoElement: 'before' },
+ *   { selector: '.button' },
+ *   { pseudoClass: 'hover' },
+ *   { pseudoElement: 'after' },
  * ]);
- * // Returns: 'div:first-child::before'
+ * // Returns: '.button:hover::after'
  * ```
  *
  * @example
@@ -48,60 +47,69 @@ import type { JoinSelectors } from '#types/selector.types';
  * // Returns: 'a.link:visited, .link:visited'
  * ```
  */
-export function combineSelectors(items: FlatBuilderContext) {
+export function combineSelectors(items: FlatBuilderContext): string {
   const groupItems = items.filter(item => 'group' in item);
-  const selectorItem = items.find(item => 'selector' in item);
-  const pseudoClasses = items.filter(item => 'pseudoClass' in item).map(item => item.pseudoClass);
-  const pseudoElements = items.filter(item => 'pseudoElement' in item).map(item => item.pseudoElement);
 
-  /**
-   * Recursively extract all selectors from a group, flattening nested groups
-   */
-  function extractSelectorsFromGroup(group: FlatBuilderContext): string[] {
-    const selectors: string[] = [];
-
-    for (const item of group) {
-      if ('selector' in item) {
-        selectors.push(item.selector);
-      } else if ('group' in item) {
-        // Recursively handle nested groups
-        selectors.push(...extractSelectorsFromGroup(item.group));
-      }
-      // Ignore pseudo-classes/elements within groups - they should be applied at the context level
-    }
-
-    return selectors;
-  }
-
-  /**
-   * Apply pseudo-classes and pseudo-elements to a selector
-   */
-  function applySelectorModifiers(selector: string): string {
-    let combined = selector;
-
-    for (const pseudoClass of pseudoClasses) {
-      combined += `:${pseudoClass}`;
-    }
-
-    for (const pseudoElement of pseudoElements) {
-      combined += `::${pseudoElement}`;
-    }
-
-    return combined;
-  }
-
-  // Handle groups (including multiple and nested groups)
+  // Handle groups first - apply all non-group items to each group selector
   if (groupItems.length > 0) {
-    // Collect all selectors from all groups
+    const nonGroupItems = items.filter(item => !('group' in item));
     const allGroupSelectors = groupItems.flatMap(groupItem => extractSelectorsFromGroup(groupItem.group));
 
-    // Apply modifiers to each selector and join with commas
-    return allGroupSelectors.map(applySelectorModifiers).join(', ');
+    return allGroupSelectors
+      .map(groupSelector => {
+        const contextWithGroupSelector = [{ selector: groupSelector }, ...nonGroupItems];
+        return combineSelectorsSequentially(contextWithGroupSelector);
+      })
+      .join(', ');
   }
 
-  // Handle single selector case
-  const selector = selectorItem?.selector ?? '';
-  return applySelectorModifiers(selector);
+  return combineSelectorsSequentially(items);
+}
+
+/**
+ * Recursively extract all selectors from a group, flattening nested groups
+ */
+function extractSelectorsFromGroup(group: FlatBuilderContext): string[] {
+  const selectors: string[] = [];
+
+  for (const item of group) {
+    if ('selector' in item) {
+      selectors.push(item.selector);
+    } else if ('group' in item) {
+      selectors.push(...extractSelectorsFromGroup(item.group));
+    }
+  }
+
+  return selectors;
+}
+
+/**
+ * Combine items sequentially, building the selector from left to right
+ */
+function combineSelectorsSequentially(items: FlatBuilderContext): string {
+  let result = '';
+
+  for (const item of items) {
+    if ('selector' in item) {
+      if (result === '') {
+        // First selector - no relationship needed
+        result = item.selector;
+      } else {
+        // Subsequent selector - use its relationship to combine with previous result
+        const relationship = item.relation ?? 'descendant';
+        result = buildSelectorWithRelationship(result, relationship, item.selector);
+      }
+    } else if ('pseudoClass' in item) {
+      // Apply pseudo-class to the last selector in the result
+      result += `:${item.pseudoClass}`;
+    } else if ('pseudoElement' in item) {
+      // Apply pseudo-element to the last selector in the result
+      result += `::${item.pseudoElement}`;
+    }
+    // Skip group items as they are handled at the top level
+  }
+
+  return result;
 }
 
 /**

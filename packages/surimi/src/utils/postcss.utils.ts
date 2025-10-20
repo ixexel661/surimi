@@ -15,9 +15,7 @@ import type { CamelCaseToKebabCase } from '#types/util.types';
 export function formatPropertyName<T extends string>(property: T): CamelCaseToKebabCase<T> {
   if (property.length === 0) return property as never;
 
-  let formatted = property[0]?.toLowerCase() + property.slice(1);
-
-  return formatted.replace(/([A-Z])/g, '-$1').toLowerCase() as CamelCaseToKebabCase<T>;
+  return property.replace(/([A-Z])/g, '-$1').toLowerCase() as CamelCaseToKebabCase<T>;
 }
 
 /**

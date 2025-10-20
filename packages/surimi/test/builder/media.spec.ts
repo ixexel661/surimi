@@ -22,12 +22,12 @@ describe('Media Queries', () => {
     });
 
     it('should support max-width media queries', () => {
-      media().minWidth('768px').select('.mobile-nav').style({
+      media().maxWidth('768px').select('.mobile-nav').style({
         display: 'block',
       });
 
       expect(Surimi.build()).toBe(`\
-@media (max-width: 767px) {
+@media (max-width: 768px) {
     .mobile-nav {
         display: block
     }
@@ -76,7 +76,7 @@ describe('Media Queries', () => {
 
   describe('Media query builder', () => {
     it('should support minWidth and maxWidth methods', () => {
-      media().minWidth('600px').maxWidth('1200px').select('.responsive').style({
+      media().minWidth('600px').and().maxWidth('1200px').select('.responsive').style({
         fontSize: '18px',
       });
 

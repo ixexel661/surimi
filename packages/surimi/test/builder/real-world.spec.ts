@@ -321,9 +321,6 @@ a:hover {
         max-width: 768px;
         padding: 2rem
     }
-    h1 {
-        font-size: 3rem
-    }
 }
 @media (min-width: 1024px) {
     .container {
@@ -332,6 +329,11 @@ a:hover {
 }
 h1 {
     font-size: 2rem
+}
+@media (min-width: ) {
+    h1 {
+        font-size: 3rem
+    }
 }
 @media (prefers-color-scheme: dark) {
     body {

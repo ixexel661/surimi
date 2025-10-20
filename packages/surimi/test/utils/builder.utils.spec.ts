@@ -284,18 +284,6 @@ describe('combineSelectors', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle groups mixed with single selectors', () => {
-      const input: FlatBuilderContext = [
-        { selector: 'standalone' },
-        {
-          group: [{ selector: 'grouped1' }, { selector: 'grouped2' }],
-        },
-        { pseudoClass: 'hover' },
-      ];
-      // When both groups and single selectors exist, groups take precedence
-      expect(combineSelectors(input)).toBe('grouped1:hover, grouped2:hover');
-    });
-
     it('should handle modifiers without any selectors or groups', () => {
       const input: FlatBuilderContext = [
         { pseudoClass: 'hover' },

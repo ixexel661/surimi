@@ -21,8 +21,8 @@ describe('postcss.utils', () => {
     });
 
     it('should handle consecutive capital letters', () => {
-      expect(formatPropertyName('WebkitTransform')).toBe('webkit-transform');
-      expect(formatPropertyName('MozAppearance')).toBe('moz-appearance');
+      expect(formatPropertyName('WebkitTransform')).toBe('-webkit-transform');
+      expect(formatPropertyName('MozAppearance')).toBe('-moz-appearance');
     });
 
     it('should handle properties with numbers', () => {
@@ -33,7 +33,7 @@ describe('postcss.utils', () => {
     it('should handle edge cases', () => {
       expect(formatPropertyName('')).toBe('');
       expect(formatPropertyName('a')).toBe('a');
-      expect(formatPropertyName('A')).toBe('a');
+      expect(formatPropertyName('A')).toBe('-a');
     });
 
     it('should preserve already kebab-case properties', () => {
@@ -174,14 +174,14 @@ describe('postcss.utils', () => {
       const declarations = createDeclarations(properties);
 
       expect(declarations).toHaveLength(4);
-      expect(declarations[0]!.prop).toBe('background');
-      expect(declarations[0]!.value).toBe('linear-gradient(45deg, #ff6b6b, #4ecdc4)');
-      expect(declarations[1]!.prop).toBe('box-shadow');
-      expect(declarations[1]!.value).toBe('0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)');
-      expect(declarations[2]!.prop).toBe('transform');
-      expect(declarations[2]!.value).toBe('translateX(10px) rotate(45deg) scale(1.2)');
-      expect(declarations[3]!.prop).toBe('font-family');
-      expect(declarations[3]!.value).toBe('"Helvetica Neue", Arial, sans-serif');
+      expect(declarations[0]?.prop).toBe('background');
+      expect(declarations[0]?.value).toBe('linear-gradient(45deg, #ff6b6b, #4ecdc4)');
+      expect(declarations[1]?.prop).toBe('box-shadow');
+      expect(declarations[1]?.value).toBe('0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)');
+      expect(declarations[2]?.prop).toBe('transform');
+      expect(declarations[2]?.value).toBe('translateX(10px) rotate(45deg) scale(1.2)');
+      expect(declarations[3]?.prop).toBe('font-family');
+      expect(declarations[3]?.value).toBe('"Helvetica Neue", Arial, sans-serif');
     });
 
     it('should handle vendor-prefixed properties', () => {
@@ -189,17 +189,17 @@ describe('postcss.utils', () => {
         WebkitTransform: 'scale(1.1)',
         MozUserSelect: 'none',
         msGridColumns: '1fr 1fr',
-      } as any; // Using 'any' since these might not be in the strict type
+      };
 
       const declarations = createDeclarations(properties);
 
       expect(declarations).toHaveLength(3);
-      expect(declarations[0]!.prop).toBe('webkit-transform');
-      expect(declarations[0]!.value).toBe('scale(1.1)');
-      expect(declarations[1]!.prop).toBe('moz-user-select');
-      expect(declarations[1]!.value).toBe('none');
-      expect(declarations[2]!.prop).toBe('ms-grid-columns');
-      expect(declarations[2]!.value).toBe('1fr 1fr');
+      expect(declarations[0]?.prop).toBe('-webkit-transform');
+      expect(declarations[0]?.value).toBe('scale(1.1)');
+      expect(declarations[1]?.prop).toBe('-moz-user-select');
+      expect(declarations[1]?.value).toBe('none');
+      expect(declarations[2]?.prop).toBe('ms-grid-columns');
+      expect(declarations[2]?.value).toBe('1fr 1fr');
     });
 
     it('should handle mixed custom properties and regular properties', () => {

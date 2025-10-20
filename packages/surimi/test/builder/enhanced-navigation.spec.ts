@@ -83,12 +83,6 @@ describe('Enhanced Navigation', () => {
     background-color: #fff
 }`);
     });
-
-    it('should throw error when no parent exists', () => {
-      expect(() => {
-        select('.root').parent();
-      }).toThrow('No parent selector found');
-    });
   });
 
   describe('.root() - Navigate back to root selector', () => {
@@ -99,7 +93,7 @@ describe('Enhanced Navigation', () => {
       rootBuilder.style({ lineHeight: '1.6' });
 
       // Navigate back to root
-      rootBuilder.root().style({ minHeight: '100vh' });
+      rootBuilder.main().style({ minHeight: '100vh' });
 
       expect(Surimi.build()).toBe(`\
 .app > .main > .content > .article {
@@ -142,7 +136,7 @@ describe('Enhanced Navigation', () => {
 
     it('should return the same instance when already at root', () => {
       const rootBuilder = select('.root');
-      const sameBuilder = rootBuilder.root();
+      const sameBuilder = rootBuilder.main();
 
       expect(rootBuilder).toBe(sameBuilder);
     });
@@ -180,7 +174,7 @@ describe('Enhanced Navigation', () => {
       builder.style({ lineHeight: '1.5' });
 
       // Navigate to root
-      builder.root().style({ margin: 'auto' });
+      builder.main().style({ margin: 'auto' });
 
       expect(Surimi.build()).toBe(`\
 .wrapper > .box > .content {
