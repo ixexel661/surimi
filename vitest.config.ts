@@ -12,6 +12,16 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'selector-parser',
+          include: ['./packages/selector-parser/test/**/*.spec.ts'],
+          typecheck: {
+            enabled: true,
+            include: ['./packages/selector-parser/test/**/*.spec-d.ts'],
+          },
+        },
+      },
+      {
+        test: {
           name: 'vite-plugin-surimi',
           include: ['./packages/vite-plugin-surimi/test/**/*.spec.ts'],
         },

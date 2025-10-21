@@ -439,8 +439,10 @@ export type GetParentSelector<T extends BuilderContext> = T extends [...infer Re
     : T
   : T;
 
-export type GetFirstSelector<T extends BuilderContext> = T extends [infer First, ...infer _Rest]
+export type GetFirstSelector<T extends BuilderContext> = T extends [infer First, ...infer Rest]
   ? First extends { selector: string }
     ? First
-    : never
+    : Rest extends BuilderContext
+      ? GetFirstSelector<Rest>
+      : never
   : never;

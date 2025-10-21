@@ -7,11 +7,14 @@ settings:
 catalogs:
   build:
     rolldown:
-      specifier: ^1.0.0-beta.43
+      specifier: ^1.0.0-beta.44
       version: 1.0.0-beta.44
     tsdown:
       specifier: ^0.15.7
       version: 0.15.7
+    tsup:
+      specifier: ^8.5.0
+      version: 8.5.0
     typescript:
       specifier: ^5.9.3
       version: 5.9.3
@@ -419,6 +422,24 @@ importers:
         specifier: ^19.2.1
         version: 19.2.1(@types/react@19.2.2)
 
+  packages/selector-parser:
+    devDependencies:
+      '@surimi/linter-config':
+        specifier: workspace:*
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      parsel-js:
+        specifier: ^1.2.2
+        version: 1.2.2
+      tsdown:
+        specifier: catalog:build
+        version: 0.15.7(typescript@5.9.3)
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
+
   packages/surimi:
     dependencies:
       csstype:
@@ -441,13 +462,10 @@ importers:
         specifier: workspace:*
         version: link:../../config/typescript-config
       rolldown:
-        specifier: 1.0.0-beta.44
-        version: 1.0.0-beta.44
-      tsdown:
         specifier: catalog:build
-        version: 0.15.7(typescript@5.9.3)
+        version: 1.0.0-beta.44
       tsup:
-        specifier: ^8.5.0
+        specifier: catalog:build
         version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.8.1)
       typescript:
         specifier: catalog:build

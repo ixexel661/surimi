@@ -8,7 +8,7 @@
     "css-in-js"
   ],
   "license": "MIT",
-  "author": "Janis Jansen <oss@surimi>",
+  "author": "Janis Jansen <oss@janis.me>",
   "type": "module",
   "imports": {
     "#*": [
