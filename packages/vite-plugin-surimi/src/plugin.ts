@@ -96,12 +96,15 @@ if (import.meta.hot) {
         resolvedConfig = config;
         isDev = config.command !== 'build' && !config.build.watch;
       },
-
+      buildStart() {
+        this.warn(
+          'Surimi is still in early development. Please report any issues you encounter at https://github.com/janis-me/surimi\n',
+        );
+      },
       handleHotUpdate({ file, server }) {
         const modules = [];
 
         if (tsFileFilter(file)) {
-          console.log('surimi HMR:', file);
           // Direct change to a .css.ts file
           compilationCache.delete(file);
           modules.push(...collectModulesForInvalidation(file, server, inlineCss));
@@ -195,13 +198,10 @@ if (import.meta.hot) {
             const { css, js, dependencies } = await getCompilationResult(id);
             const jsCode = generateJsWithHmr(js, css, id);
 
-            console.log(id, dependencies);
-
             // Add file dependencies for proper HMR
             if (isDev && !options?.ssr) {
               dependencies.forEach((dep: string) => {
                 if (!filesWatched.has(dep)) {
-                  console.log('watching', dep);
                   filesWatched.add(dep);
                   this.addWatchFile(dep);
                 }

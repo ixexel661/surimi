@@ -65,7 +65,6 @@ export const __SURIMI_GENERATED_CSS__ = __surimi__instance__.build();
 
 async function execute(code: string): Promise<{ css: string; js: string }> {
   try {
-    console.log(code.slice(0, 200));
     const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`;
     const module = (await import(dataUrl)) as Record<string, unknown>;
 

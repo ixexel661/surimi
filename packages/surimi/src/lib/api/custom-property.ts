@@ -59,16 +59,13 @@ export function property<TValue = string & {}>(
   initialValue?: TValue,
 ): CustomProperty<TValue> {
   if (typeof nameOrOptions === 'string') {
-    return new CustomProperty(nameOrOptions, syntax!, inherits!, initialValue!);
+    if (syntax === undefined || inherits === undefined || initialValue === undefined) {
+      throw new Error('When using individual parameters, syntax, inherits, and initialValue must be provided.');
+    }
+
+    return new CustomProperty(nameOrOptions, syntax, inherits, initialValue);
   } else {
     const { name, syntax, inherits, initialValue } = nameOrOptions;
     return new CustomProperty(name, syntax, inherits, initialValue);
   }
 }
-
-property({
-  name: 'example-color',
-  syntax: '<color>',
-  inherits: false,
-  initialValue: 'black',
-});

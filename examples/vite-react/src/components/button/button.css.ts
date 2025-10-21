@@ -1,8 +1,8 @@
-import s from 'surimi';
+import { select } from 'surimi';
 
 import { theme } from '#styles/theme';
 
-const buttonElem = s.select('.button').style({
+const buttonElem = select('.button').style({
   padding: '0.5rem 1rem',
   border: 'none',
   borderRadius: '4px',

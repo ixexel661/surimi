@@ -34,8 +34,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
-    "build:watch": "tsdown --watch",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
     "format": "prettier . --write",
     "prepack": "pnpm -c exec ../../scripts/replace-symlinks.sh",
     "type-check": "tsc --noEmit"
@@ -49,7 +49,8 @@
   "devDependencies": {
     "@surimi/linter-config": "workspace:*",
     "@surimi/typescript-config": "workspace:*",
-    "tsdown": "catalog:build",
+    "rolldown": "1.0.0-beta.44",
+    "tsup": "^8.5.0",
     "typescript": "catalog:build"
   }
 }

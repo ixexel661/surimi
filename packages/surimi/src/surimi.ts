@@ -17,7 +17,7 @@ export abstract class Surimi {
     });
 
     const declarations = [
-      postcss.decl({ prop: 'syntax', value: customProperty.syntax }),
+      postcss.decl({ prop: 'syntax', value: `${customProperty.syntax}` }),
       postcss.decl({ prop: 'inherits', value: String(customProperty.inherits) }),
       postcss.decl({ prop: 'initial-value', value: String(customProperty.initialValue) }),
     ];
@@ -63,8 +63,6 @@ export abstract class Surimi {
 export function select<TSelectors extends ArrayWithAtLeastOneItem<ValidSelector>>(...selectors: TSelectors) {
   return _select([], Surimi.root, selectors);
 }
-
-select('h[test]').child('test');
 
 /**
  * Create a media query builder to apply selections and styles within a media query.
