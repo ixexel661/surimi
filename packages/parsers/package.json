@@ -1,13 +1,13 @@
 {
-  "name": "surimi",
-  "version": "0.3.1",
+  "name": "@surimi/parsers",
+  "version": "0.1.0",
   "private": false,
-  "description": "Next generation CSS-preprocessor (using typescript)",
+  "description": "A neat little parser for CSS selectors - written in typescript types",
   "keywords": [
     "css",
     "surimi",
-    "css-in-js",
-    "ts-in-css"
+    "css-parser",
+    "css-selector"
   ],
   "license": "MIT",
   "author": "Janis jansen <oss@janis.me>",
@@ -34,23 +34,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "build:watch": "tsup --watch",
+    "build": "tsdown",
     "format": "prettier . --write",
-    "prepack": "pnpm -c exec ../../scripts/replace-symlinks.sh",
     "type-check": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@surimi/parsers": "workspace:*",
-    "csstype": "catalog:prod",
-    "postcss": "catalog:prod",
-    "ts-mixer": "^6.0.4"
   },
   "devDependencies": {
     "@surimi/linter-config": "workspace:*",
     "@surimi/typescript-config": "workspace:*",
-    "rolldown": "catalog:build",
-    "tsup": "catalog:build",
+    "parsel-js": "^1.2.2",
+    "tsdown": "catalog:build",
     "typescript": "catalog:build"
   }
 }

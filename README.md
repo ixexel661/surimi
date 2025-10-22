@@ -88,7 +88,7 @@ We made sure surimi helps you to write good, maintainable CSS. So, we want it to
 
 - It understands [CSS Level 4 selectors](https://www.w3.org/TR/selectors-4/) and shows you what you're styling in type hints (see the [docs](https://surimi.dev/docs))
 - We use the CSS Specifications to ensure you can use 100% of the language properly (WIP)
-- No hacks. We take this seriously and want to make it right. Thus, we create things like `@surimi/selector-parser`. Typescript nerds will love this one.
+- No hacks. We take this seriously and want to make it right. Thus, we create things like `@surimi/parsers`. Typescript nerds will love this one.
 
 ## Yet another CSS-in-JS tool...
 

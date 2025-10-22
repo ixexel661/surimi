@@ -12,11 +12,11 @@ export default defineConfig({
       },
       {
         test: {
-          name: 'selector-parser',
-          include: ['./packages/selector-parser/test/**/*.spec.ts'],
+          name: 'parsers',
+          include: ['./packages/parsers/test/**/*.spec.ts'],
           typecheck: {
             enabled: true,
-            tsconfig: './packages/selector-parser/tsconfig.json',
+            tsconfig: './packages/parsers/tsconfig.json',
           },
         },
       },

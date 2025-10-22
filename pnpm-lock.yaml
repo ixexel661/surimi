@@ -385,6 +385,24 @@ importers:
         specifier: workspace:*
         version: link:../vite-plugin-surimi
 
+  packages/parsers:
+    devDependencies:
+      '@surimi/linter-config':
+        specifier: workspace:*
+        version: link:../../config/linter-config
+      '@surimi/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+      parsel-js:
+        specifier: ^1.2.2
+        version: 1.2.2
+      tsdown:
+        specifier: catalog:build
+        version: 0.15.9(typescript@5.9.3)
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
+
   packages/playground:
     dependencies:
       '@monaco-editor/react':
@@ -428,32 +446,14 @@ importers:
         specifier: ^19.2.1
         version: 19.2.1(@types/react@19.2.2)
 
-  packages/selector-parser:
-    devDependencies:
-      '@surimi/linter-config':
-        specifier: workspace:*
-        version: link:../../config/linter-config
-      '@surimi/typescript-config':
-        specifier: workspace:*
-        version: link:../../config/typescript-config
-      parsel-js:
-        specifier: ^1.2.2
-        version: 1.2.2
-      tsdown:
-        specifier: catalog:build
-        version: 0.15.9(typescript@5.9.3)
-      typescript:
-        specifier: catalog:build
-        version: 5.9.3
-
   packages/surimi:
     dependencies:
+      '@surimi/parsers':
+        specifier: workspace:*
+        version: link:../parsers
       csstype:
         specifier: catalog:prod
         version: 3.1.3
-      parsel-js:
-        specifier: ^1.2.2
-        version: 1.2.2
       postcss:
         specifier: catalog:prod
         version: 8.5.6
