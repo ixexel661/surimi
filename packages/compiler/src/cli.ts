@@ -3,10 +3,12 @@ import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, resolve } from 'node:path';
 import process from 'node:process';
-import { cancel, intro, log, outro, spinner } from '@clack/prompts';
+import { cancel, intro, log, note, outro, spinner } from '@clack/prompts';
 import chokidar from 'chokidar';
 
 import compile from '#compiler';
+
+import { version } from '../package.json';
 
 interface CLIOptions {
   input: string;
@@ -150,13 +152,14 @@ async function runCompile(options: CLIOptions) {
   const outputPaths = generateOutputPaths(inputPath, outDir ? resolve(cwd, outDir) : undefined);
 
   try {
-    intro('🍣 @surimi/compiler');
+    intro(`🍣 @surimi/compiler (v${version})`);
+    note('Surimi is still in early development. Please report any issues you encounter!', 'Warning: Early Development');
     const s = spinner();
     const filename = basename(inputPath);
     let initialCompileTime: number | null = null;
 
     if (options.watch) {
-      log.info(`ℹ️  Running in watch mode. Press 'q' to quit.`);
+      log.info(`Running in watch mode. Press 'q' to quit.`);
     }
 
     s.start(`${options.watch ? 'Watching' : 'Compiling'} ${filename}...`);
@@ -173,7 +176,7 @@ async function runCompile(options: CLIOptions) {
         const endTimer = Date.now();
 
         if (!result) {
-          s.stop('❌ Compilation failed: No result returned');
+          s.stop('Compilation failed: No result returned');
           return null;
         }
 
@@ -189,10 +192,10 @@ async function runCompile(options: CLIOptions) {
         }
 
         const durationMs = endTimer - startTimer;
-        s.message(`✅ Compilation complete in ${String(durationMs)}ms`);
+        s.message(`Compilation complete in ${String(durationMs)}ms`);
         return durationMs;
       } catch (error) {
-        s.message(`❌ ${error instanceof Error ? error.message : String(error)}`);
+        log.error(`${error instanceof Error ? error.message : String(error)}\n`);
       }
 
       return null;
@@ -239,7 +242,7 @@ async function runCompile(options: CLIOptions) {
           const onKeyPress = (key: string) => {
             if (key === 'q' || key === '\u0003') {
               // 'q' or Ctrl+C
-              s.stop('ℹ️  Exiting watch mode...');
+              s.stop('ℹExiting watch mode...');
               cleanup();
               watcher
                 .close()
@@ -270,7 +273,7 @@ async function runCompile(options: CLIOptions) {
 
         watcher.on('change', onChange);
         watcher.on('unlink', () => {
-          s.stop(`ℹ️  File ${basename(inputPath)} was unlinked`);
+          s.stop(`ℹFile ${basename(inputPath)} was unlinked`);
           cleanup();
           watcher
             .close()
@@ -284,13 +287,13 @@ async function runCompile(options: CLIOptions) {
       initialCompileTime = await compileAndLog();
 
       if (initialCompileTime) {
-        s.stop(`✅ Compilation completed in ${String(initialCompileTime)}ms`);
+        s.stop(`Compilation completed in ${String(initialCompileTime)}ms`);
       } else {
-        s.stop('❌ Compilation failed due to errors above');
+        s.stop('Compilation failed due to errors above');
       }
     }
 
-    outro(`👋 Thanks for using surimi${initialCompileTime == null ? ", and sorry it didn't work this time :(" : ''}`);
+    outro(`Thanks for using surimi! 👋`);
   } catch (error) {
     cancel(`Compilation failed: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);

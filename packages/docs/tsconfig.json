@@ -1,6 +1,6 @@
 {
-  "extends": ["astro/tsconfigs/strict", "@janis.me/typescript-config/react.json"],
-  "include": [".astro/types.d.ts", "src"],
+  "extends": ["astro/tsconfigs/strict", "@surimi/typescript-config/react.json"],
+  "include": [".astro/types.d.ts", "src", "*.config.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
     "baseUrl": "."

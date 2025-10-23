@@ -1,2 +1,2 @@
-export { Surimi as default, select, media } from './surimi';
-export type { SelectorInput } from './types';
+export { property } from '#lib/api/index';
+export { Surimi, select, media } from './surimi';

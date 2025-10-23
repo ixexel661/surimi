@@ -1,0 +1,19 @@
+import { describe, expectTypeOf, it } from 'vitest';
+
+import { tokenizeSelector } from '#index';
+
+describe('attribute selectors', () => {
+  it('tokenizes attribute selectors', () => {
+    const input = 'div[class="container"][data-id^="item"]:hover';
+
+    type Expected = [
+      { type: 'type'; content: 'div'; name: 'div' },
+      { type: 'attribute'; content: '[class="container"]'; name: 'class'; operator: '='; value: '"container"' },
+      { type: 'attribute'; content: '[data-id^="item"]'; name: 'data-id'; operator: '^='; value: '"item"' },
+      { type: 'pseudo-class'; content: ':hover'; name: 'hover' },
+    ];
+
+    const tokens = tokenizeSelector(input);
+    expectTypeOf(tokens).toEqualTypeOf<Expected>();
+  });
+});

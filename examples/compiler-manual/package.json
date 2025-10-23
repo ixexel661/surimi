@@ -7,9 +7,9 @@
     "build": "surimi compile index.ts --out-dir ./dist --no-js"
   },
   "devDependencies": {
-    "@janis.me/linter-config": "workspace:*",
-    "@janis.me/typescript-config": "workspace:*",
     "@surimi/compiler": "workspace:*",
+    "@surimi/linter-config": "workspace:*",
+    "@surimi/typescript-config": "workspace:*",
     "surimi": "workspace:*"
   }
 }

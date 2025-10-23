@@ -1,15 +1,15 @@
-import s from 'surimi';
+import { select } from 'surimi';
 
-s.select('*').style({
+select('*').style({
   boxSizing: 'border-box',
 });
 
-s.select('html', 'body').style({
+select('html', 'body').style({
   margin: 0,
   padding: 0,
 });
 
-s.select(':root').style({
+select(':root').style({
   colorScheme: 'light dark',
   fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
   margin: 0,

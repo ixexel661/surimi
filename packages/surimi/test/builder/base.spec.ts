@@ -1,54 +1,54 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import s from '../../src/index';
+import { select, Surimi } from '../../src/index';
 
 describe('Basic Selector & Style Application', () => {
   beforeEach(() => {
-    s.clear();
+    Surimi.clear();
   });
 
   describe('Basic CSS Selectors', () => {
     it('should support class selectors', () => {
-      s.select('.container').style({ display: 'flex' });
+      select('.container').style({ display: 'flex' });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .container {
     display: flex
 }`);
     });
 
     it('should support ID selectors', () => {
-      s.select('#header').style({ backgroundColor: 'blue' });
+      select('#header').style({ backgroundColor: 'blue' });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 #header {
     background-color: blue
 }`);
     });
 
     it('should support element selectors', () => {
-      s.select('button').style({ border: 'none' });
+      select('button').style({ border: 'none' });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 button {
     border: none
 }`);
     });
 
     it('should support multiple selectors as arguments', () => {
-      s.select('.container', '.wrapper').style({ padding: '1rem' });
+      select('.container', '.wrapper').style({ padding: '1rem' });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .container, .wrapper {
     padding: 1rem
 }`);
     });
 
     it('should support CSS selector strings with multiple selectors', () => {
-      s.select('.container, .outer, html').style({ boxSizing: 'border-box' });
+      select('html', '.container', '.outer').style({ boxSizing: 'border-box' });
 
-      expect(s.build()).toBe(`\
-.container, .outer, html {
+      expect(Surimi.build()).toBe(`\
+html, .container, .outer {
     box-sizing: border-box
 }`);
     });
@@ -56,13 +56,13 @@ button {
 
   describe('CSS Properties with TypeScript Validation', () => {
     it('should support basic CSS properties', () => {
-      s.select('.box').style({
+      select('.box').style({
         width: '100px',
         height: '100px',
         margin: '0 auto',
       });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .box {
     width: 100px;
     height: 100px;
@@ -71,14 +71,14 @@ button {
     });
 
     it('should support flexbox properties', () => {
-      s.select('.flex-container').style({
+      select('.flex-container').style({
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'stretch',
       });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .flex-container {
     display: flex;
     flex-direction: row;
@@ -88,13 +88,13 @@ button {
     });
 
     it('should support grid properties', () => {
-      s.select('.grid-container').style({
+      select('.grid-container').style({
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '1rem',
       });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -103,13 +103,13 @@ button {
     });
 
     it('should support color properties', () => {
-      s.select('.colorful').style({
+      select('.colorful').style({
         color: '#333',
         backgroundColor: 'rgba(255, 0, 0, 0.5)',
         borderColor: 'hsl(120, 50%, 50%)',
       });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .colorful {
     color: #333;
     background-color: rgba(255, 0, 0, 0.5);
@@ -120,21 +120,21 @@ button {
 
   describe('CSS Output Generation', () => {
     it('should handle empty styles gracefully', () => {
-      s.select('.empty').style({});
+      select('.empty').style({});
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .empty {}`);
     });
 
     it('should preserve CSS property order', () => {
-      s.select('.ordered').style({
+      select('.ordered').style({
         position: 'absolute',
         top: '0',
         left: '0',
         zIndex: 1000,
       });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .ordered {
     position: absolute;
     top: 0;
@@ -144,14 +144,14 @@ button {
     });
 
     it('should handle numeric values correctly', () => {
-      s.select('.numbers').style({
+      select('.numbers').style({
         width: '100px',
         height: '200px',
         zIndex: 999,
         opacity: 0.5,
       });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .numbers {
     width: 100px;
     height: 200px;
@@ -161,13 +161,13 @@ button {
     });
 
     it('should handle vendor-prefixed properties', () => {
-      s.select('.prefixed').style({
+      select('.prefixed').style({
         WebkitTransform: 'rotate(45deg)',
         MozTransform: 'rotate(45deg)',
         transform: 'rotate(45deg)',
       });
 
-      expect(s.build()).toBe(`\
+      expect(Surimi.build()).toBe(`\
 .prefixed {
     -webkit-transform: rotate(45deg);
     -moz-transform: rotate(45deg);

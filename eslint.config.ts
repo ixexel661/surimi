@@ -1,3 +1,3 @@
-import { baseConfig } from '@janis.me/linter-config';
+import { baseConfig } from './config/linter-config';
 
 export default baseConfig;

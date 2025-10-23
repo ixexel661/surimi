@@ -1,5 +1,5 @@
 {
-  "name": "@janis.me/repo-starter",
+  "name": "@surimi/repo-starter",
   "description": "A starter template for pnpm-based web repositories",
   "keywords": [
     "janis.me"
@@ -15,17 +15,18 @@
     "deps": "pnpm taze",
     "examples": "pnpm build && concurrently \"pnpm build:watch\" \"pnpm -r dev\"",
     "format": "prettier --write .",
-    "lint": "eslint --flag unstable_config_lookup_from_file .",
+    "lint": "eslint --flag v10_config_lookup_from_file .",
     "publish-ci": "jiti ./scripts/publish-ci.ts",
     "test": "vitest"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "catalog:format",
-    "@janis.me/linter-config": "workspace:*",
-    "@janis.me/typescript-config": "workspace:*",
     "@playwright/test": "catalog:test",
+    "@surimi/linter-config": "workspace:*",
+    "@surimi/typescript-config": "workspace:*",
     "@types/node": "catalog:types",
     "@vitest/browser": "catalog:test",
+    "@vitest/coverage-v8": "catalog:test",
     "@vitest/ui": "catalog:test",
     "concurrently": "catalog:script",
     "eslint": "catalog:lint",
@@ -37,7 +38,7 @@
     "typescript": "catalog:build",
     "vitest": "catalog:test"
   },
-  "packageManager": "pnpm@10.18.3+sha512.bbd16e6d7286fd7e01f6b3c0b3c932cda2965c06a908328f74663f10a9aea51f1129eea615134bf992831b009eabe167ecb7008b597f40ff9bc75946aadfb08d",
+  "packageManager": "pnpm@10.19.0",
   "engines": {
     "node": ">=22.18"
   }

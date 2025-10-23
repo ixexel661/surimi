@@ -41,8 +41,8 @@
     "@surimi/compiler": "workspace:*"
   },
   "devDependencies": {
-    "@janis.me/linter-config": "workspace:*",
-    "@janis.me/typescript-config": "workspace:*",
+    "@surimi/linter-config": "workspace:*",
+    "@surimi/typescript-config": "workspace:*",
     "@types/node": "catalog:types",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",

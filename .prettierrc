@@ -9,9 +9,9 @@
     "<BUILTIN_MODULES>",
     "<THIRD_PARTY_MODULES>",
     "",
-    "^@janis.me/(.*)$",
+    "^@surimi/(.*)$",
     "",
-    "[#]",
+    "^[\\#]",
     "",
     "^[./].*(?<!\\.(c|le|sc)ss)$",
     "\\.(c|le|sc)ss$"

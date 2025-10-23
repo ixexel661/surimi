@@ -14,10 +14,11 @@
   "type": "module",
   "imports": {
     "#*": [
-      "./src/*",
       "./src/*.ts",
       "./src/*.tsx",
-      "./src/*/index.ts"
+      "./src/*/index.ts",
+      "./src/*.js",
+      "./src/*/index.js"
     ]
   },
   "exports": {
@@ -33,19 +34,24 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
-    "build:watch": "tsdown --watch",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
     "format": "prettier . --write",
-    "prepack": "pnpm -c exec ../../scripts/replace-symlinks.sh"
+    "prepack": "pnpm -c exec ../../scripts/replace-symlinks.sh",
+    "test": "pnpm -w test --project=surimi",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@emotion/hash": "catalog:prod",
+    "@surimi/parsers": "workspace:*",
     "csstype": "catalog:prod",
-    "postcss": "catalog:prod"
+    "postcss": "catalog:prod",
+    "ts-mixer": "^6.0.4"
   },
   "devDependencies": {
-    "@janis.me/linter-config": "workspace:*",
-    "@janis.me/typescript-config": "workspace:*",
-    "tsdown": "catalog:build"
+    "@surimi/linter-config": "workspace:*",
+    "@surimi/typescript-config": "workspace:*",
+    "rolldown": "catalog:build",
+    "tsup": "catalog:build",
+    "typescript": "catalog:build"
   }
 }

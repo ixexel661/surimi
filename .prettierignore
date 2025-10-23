@@ -4,3 +4,4 @@ dist/
 .npm/
 .config/
 pnpm-lock.yaml
+pnpm-workspace.yaml
