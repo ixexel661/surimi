@@ -67,10 +67,6 @@ export class WithPseudoClasses<TContext extends string>
   public playing = () => this.createPseudoClass('playing');
   public required = () => this.createPseudoClass('required');
   public right = () => this.createPseudoClass('right');
-  /**
-   * Selects the root element of the document via the `:root` pseudo-class
-   * Not to be confused with `.main()` which navigates back to the root selector of the current builder context.
-   */
   public root = () => this.createPseudoClass('root');
   public scope = () => this.createPseudoClass('scope');
   public target = () => this.createPseudoClass('target');

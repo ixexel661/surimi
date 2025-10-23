@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { select, Surimi } from '../../src/index';
+import { select, Surimi } from '#index';
+import { SelectorBuilder } from '#lib/builders/selector.builder';
 
 describe('Complex Selector Combinations', () => {
   beforeEach(() => {

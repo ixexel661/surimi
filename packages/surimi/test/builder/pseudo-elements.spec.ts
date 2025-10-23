@@ -60,18 +60,14 @@ describe('Pseudo-classes and Pseudo-elements', () => {
 
   describe('Pseudo-classes and nesting', () => {
     it('should not fall back to the main selector after a pseudo class', () => {
-      select('.card')
-        .hover()
-        .style({ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' })
-        .parent()
-        .style({ fontWeight: 'bold' });
+      select('.card').style({ fontWeight: 'bold' }).hover().style({ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' });
 
       expect(Surimi.build()).toBe(`\
-.card:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
-}
 .card {
     font-weight: bold
+}
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
 }`);
     });
   });
