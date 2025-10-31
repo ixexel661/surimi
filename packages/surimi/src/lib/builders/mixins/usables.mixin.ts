@@ -1,7 +1,7 @@
 import { _selectByContext } from '#lib/api/select';
+import { Style } from '#lib/api/style';
 
 import { MixinBuilder } from '../mixin.builder';
-import { StyleBuilder } from '../style.builder';
 import { WithStyling } from './styling.mixin';
 
 /**
@@ -31,9 +31,9 @@ export abstract class WithUsables<TContext extends string> extends WithStyling<T
    * select('.button').use(buttonStyle);
    * ```
    */
-  public use(usable: StyleBuilder | MixinBuilder<string>) {
-    if (usable instanceof StyleBuilder) {
-      const styles = usable.styles;
+  public use(usable: Style | MixinBuilder<string>) {
+    if (usable instanceof Style) {
+      const styles = usable.build();
 
       this.style(styles);
     } else if (usable instanceof MixinBuilder) {

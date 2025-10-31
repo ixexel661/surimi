@@ -19,7 +19,7 @@ export abstract class WithSelecting<TContext extends string> extends CoreBuilder
   public select<T extends ArrayWithAtLeastOneItem<ValidSelector>>(...selectors: T | [SelectorBuilder<string>]) {
     if (selectors.length === 1 && selectors[0] instanceof SelectorBuilder) {
       const selectorBuilder = selectors[0];
-      return _select([selectorBuilder.toString()], this.getOrCreateRule(), this._postcssRoot);
+      return _select([selectorBuilder.build()], this.getOrCreateRule(), this._postcssRoot);
     }
 
     return _select(selectors as T, this.getOrCreateRule(), this._postcssRoot);
