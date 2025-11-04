@@ -23,7 +23,7 @@ export abstract class SurimiBase {
 }
 
 /**
- * Provices a pre-file global context for Surimi processing.
+ * Provides a pre-file global context for Surimi processing.
  * It's used to collect all generated CSS rules before outputting the final CSS.
  */
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
