@@ -14,10 +14,17 @@ interface CacheEntry {
 // Build cache for incremental compilation in watch mode
 export class BuildCache {
   private cache = new Map<string, CacheEntry>();
+  private accessOrder: string[] = [];
+  private maxSize: number;
   private stats = {
     hits: 0,
     misses: 0,
+    evictions: 0,
   };
+
+  constructor(maxSize = 100) {
+    this.maxSize = maxSize;
+  }
 
   private async getFileHash(filePath: string): Promise<string> {
     try {
@@ -52,8 +59,27 @@ export class BuildCache {
       }
     }
 
+    this.updateAccessOrder(inputPath);
     this.stats.hits++;
     return entry.result;
+  }
+
+  private updateAccessOrder(key: string): void {
+    const index = this.accessOrder.indexOf(key);
+    if (index > -1) {
+      this.accessOrder.splice(index, 1);
+    }
+    this.accessOrder.push(key);
+  }
+
+  private evictLRU(): void {
+    if (this.cache.size >= this.maxSize && this.accessOrder.length > 0) {
+      const lruKey = this.accessOrder.shift();
+      if (lruKey) {
+        this.cache.delete(lruKey);
+        this.stats.evictions++;
+      }
+    }
   }
 
   async set(inputPath: string, result: CompileResult): Promise<void> {
@@ -65,6 +91,8 @@ export class BuildCache {
       dependencyHashes.set(depPath, depHash);
     }
 
+    this.evictLRU();
+
     this.cache.set(inputPath, {
       hash,
       result,
@@ -72,6 +100,8 @@ export class BuildCache {
       dependencyHashes,
       timestamp: Date.now(),
     });
+
+    this.updateAccessOrder(inputPath);
   }
 
   // Invalidates cache entries that depend on the changed file
@@ -91,17 +121,20 @@ export class BuildCache {
 
   clear(): void {
     this.cache.clear();
+    this.accessOrder = [];
     this.stats.hits = 0;
     this.stats.misses = 0;
+    this.stats.evictions = 0;
   }
 
-  getStats(): { hits: number; misses: number; size: number; hitRate: number } {
+  getStats(): { hits: number; misses: number; size: number; hitRate: number; evictions: number } {
     const total = this.stats.hits + this.stats.misses;
     return {
       hits: this.stats.hits,
       misses: this.stats.misses,
       size: this.cache.size,
       hitRate: total > 0 ? this.stats.hits / total : 0,
+      evictions: this.stats.evictions,
     };
   }
 }

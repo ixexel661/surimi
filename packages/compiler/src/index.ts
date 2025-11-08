@@ -3,16 +3,25 @@ import { watch } from 'rolldown';
 
 import { BuildCache } from '#cache';
 import { getCompileResult, getRolldownInput, getRolldownInstance } from '#compiler';
+import { BuildError, ExecutionError } from '#errors';
+import type { CompilerError } from '#errors';
 
 export interface CompileOptions {
   inputPath: string;
   cwd: string;
   include: string[];
   exclude: string[];
+  cache?: CacheOptions;
+}
+
+export interface CacheOptions {
+  enabled?: boolean;
+  maxSize?: number;
 }
 
 export interface WatchOptions {
-  onChange: (compileResult: CompileResult | undefined, event: RolldownWatcherEvent) => void;
+  onChange: (result: CompileResult, event: RolldownWatcherEvent) => void;
+  onError?: (error: CompilerError, event: RolldownWatcherEvent) => void;
 }
 
 export interface CompileResult {
@@ -20,6 +29,7 @@ export interface CompileResult {
   js: string;
   dependencies: string[];
   duration: number;
+  errors?: CompilerError[];
 }
 
 export async function compile(options: CompileOptions): Promise<CompileResult | undefined> {
@@ -38,7 +48,8 @@ export async function compile(options: CompileOptions): Promise<CompileResult | 
 // Compiles and watches for file changes with incremental caching
 export function compileWatch(options: CompileOptions, watchOptions: WatchOptions): RolldownWatcher {
   const rolldownInput = getRolldownInput(options);
-  const buildCache = new BuildCache();
+  const cacheEnabled = options.cache?.enabled !== false;
+  const buildCache = cacheEnabled ? new BuildCache(options.cache?.maxSize) : null;
 
   const watcher = watch({
     ...rolldownInput,
@@ -50,56 +61,70 @@ export function compileWatch(options: CompileOptions, watchOptions: WatchOptions
   });
 
   watcher.on('event', async event => {
+    if (event.code === 'BUNDLE_START' && buildCache) {
+      if ('input' in event && typeof event.input === 'string') {
+        buildCache.invalidateDependents(event.input);
+      }
+    }
+
     if (event.code === 'BUNDLE_END') {
       const startTime = Date.now();
       const output = await event.result.generate();
 
       if ('errors' in output) {
-        watchOptions.onChange(undefined, event);
+        watchOptions.onError?.(
+          new BuildError('Build failed with errors', options.inputPath),
+          event,
+        );
         return;
       }
 
       const chunk = output.chunks[0];
 
       if (!chunk) {
-        watchOptions.onChange(undefined, event);
-        return;
-      }
-
-      // Get module information for cache checking
-      const moduleIds = chunk.getModuleIds();
-      const imports = chunk.getImports();
-      const dynamicImports = chunk.getDynamicImports();
-
-      // Try to get cached result first
-      const cachedResult = await buildCache.get(options.inputPath);
-
-      if (cachedResult) {
-        // Cache hit - use cached result
-        const duration = Date.now() - startTime;
-
-        void event.result.close();
-
-        watchOptions.onChange(
-          {
-            ...cachedResult,
-            duration: duration + event.duration,
-          },
+        watchOptions.onError?.(
+          new BuildError('No output chunk generated', options.inputPath),
           event,
         );
         return;
       }
 
-      // Cache miss - perform compilation
+      const moduleIds = chunk.getModuleIds();
+      const imports = chunk.getImports();
+      const dynamicImports = chunk.getDynamicImports();
+
+      if (buildCache) {
+        const cachedResult = await buildCache.get(options.inputPath);
+
+        if (cachedResult) {
+          const duration = Date.now() - startTime;
+
+          void event.result.close();
+
+          watchOptions.onChange(
+            {
+              ...cachedResult,
+              duration: duration + event.duration,
+            },
+            event,
+          );
+          return;
+        }
+      }
+
       const result = await getCompileResult(chunk.getCode(), imports, dynamicImports, moduleIds);
 
       if (!result) {
-        watchOptions.onChange(undefined, event);
+        watchOptions.onError?.(
+          new ExecutionError('Failed to execute compiled code', options.inputPath),
+          event,
+        );
         return;
       }
 
-      // Store result in cache
-      await buildCache.set(options.inputPath, result);
+      if (buildCache) {
+        await buildCache.set(options.inputPath, result);
+      }
 
       const duration = Date.now() - startTime;
 
