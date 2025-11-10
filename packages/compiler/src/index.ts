@@ -25,7 +25,9 @@ export interface WatchOptions {
 }
 
 export interface CompileResult {
+  /* The generated CSS output */
   css: string;
+  /* The transformed JavaScript with preserved exports */
   js: string;
   dependencies: string[];
   duration: number;
@@ -45,11 +47,17 @@ export async function compile(options: CompileOptions): Promise<CompileResult | 
   return result ? { ...result, duration } : undefined;
 }
 
-// Compiles and watches for file changes with incremental caching
+/**
+ * Compiles and watches for file changes with incremental caching
+ *
+ * Caching is enabled by default and uses SHA-256 hashing to detect file changes.
+ * This trades initial compilation speed for significantly faster incremental builds.
+ * The cache validates both the main file and all dependencies on each rebuild.
+ */
 export function compileWatch(options: CompileOptions, watchOptions: WatchOptions): RolldownWatcher {
   const rolldownInput = getRolldownInput(options);
   const cacheEnabled = options.cache?.enabled !== false;
-  const buildCache = cacheEnabled ? new BuildCache(options.cache?.maxSize) : null;
+  const buildCache = cacheEnabled ? new BuildCache(options.cache?.maxSize) : undefined;
 
   const watcher = watch({
     ...rolldownInput,
@@ -61,12 +69,6 @@ export function compileWatch(options: CompileOptions, watchOptions: WatchOptions
   });
 
   watcher.on('event', async event => {
-    if (event.code === 'BUNDLE_START' && buildCache) {
-      if ('input' in event && typeof event.input === 'string') {
-        buildCache.invalidateDependents(event.input);
-      }
-    }
-
     if (event.code === 'BUNDLE_END') {
       const startTime = Date.now();
       const output = await event.result.generate();
@@ -89,6 +91,7 @@ export function compileWatch(options: CompileOptions, watchOptions: WatchOptions
         return;
       }
 
+      const code = chunk.getCode();
       const moduleIds = chunk.getModuleIds();
       const imports = chunk.getImports();
       const dynamicImports = chunk.getDynamicImports();
@@ -112,7 +115,7 @@ export function compileWatch(options: CompileOptions, watchOptions: WatchOptions
         }
       }
 
-      const result = await getCompileResult(chunk.getCode(), imports, dynamicImports, moduleIds);
+      const result = await getCompileResult(code, imports, dynamicImports, moduleIds);
 
       if (!result) {
         watchOptions.onError?.(

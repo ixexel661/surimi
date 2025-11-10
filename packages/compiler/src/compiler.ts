@@ -72,9 +72,11 @@ export async function execute(code: string) {
     const dataUrl = `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`;
     const module = (await import(dataUrl)) as SurimiModule;
 
+    // Get the generated CSS
     const cssValue = module[SURIMI_CSS_EXPORT_NAME] ?? '';
     const css = typeof cssValue === 'string' ? cssValue : '';
 
+    // Collect all exports except the special CSS export and default
     const exports: string[] = [];
     for (const [key, value] of Object.entries(module)) {
       if (key !== 'default' && key !== SURIMI_CSS_EXPORT_NAME && isSerializable(value)) {
@@ -89,6 +91,7 @@ export async function execute(code: string) {
     if (error instanceof Error) {
       const message = error.message || String(error);
       if (message.includes('from "data:')) {
+        // We suppress the ugly data URL in the error message
         const strippedMessage = message.replace(/("data:[^ ]+)/g, '<surimi-module>');
         throw new Error(`Failed to build surimi output: ${strippedMessage}`);
       }
@@ -128,10 +131,12 @@ function validateCompileOptions(options: CompileOptions): void {
 function getModuleDependencies(imports: string[], dynamicImports: string[], moduleIds: string[]): string[] {
   const watchFiles: string[] = [];
 
+  // Add all imports from the rolldown output
   if (imports.length > 0) {
     watchFiles.push(...imports);
   }
 
+  // Add dynamic imports if any
   if (dynamicImports.length > 0) {
     watchFiles.push(...dynamicImports);
   }
