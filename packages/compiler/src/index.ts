@@ -5,6 +5,7 @@ import { BuildCache } from '#cache';
 import { getCompileResult, getRolldownInput, getRolldownInstance } from '#compiler';
 import { BuildError, ExecutionError } from '#errors';
 import type { CompilerError } from '#errors';
+import { ModuleBuildCache } from '#module-cache';
 
 export interface CompileOptions {
   inputPath: string;
@@ -17,6 +18,18 @@ export interface CompileOptions {
 export interface CacheOptions {
   enabled?: boolean;
   maxSize?: number;
+  /**
+   * Enable module-level caching for shared dependencies
+   * This caches transformed code for individual modules to avoid
+   * redundant SurimiContext.build() calls across different bundles
+   * @default true
+   */
+  moduleCache?: boolean;
+  /**
+   * Maximum number of modules to cache
+   * @default 500
+   */
+  moduleCacheSize?: number;
 }
 
 export interface WatchOptions {
@@ -36,7 +49,12 @@ export interface CompileResult {
 
 export async function compile(options: CompileOptions): Promise<CompileResult | undefined> {
   const startTime = Date.now();
-  const rolldownInput = getRolldownInput(options);
+
+  // Initialize module cache if enabled
+  const moduleCacheEnabled = options.cache?.moduleCache !== false;
+  const moduleCache = moduleCacheEnabled ? new ModuleBuildCache(options.cache?.moduleCacheSize) : undefined;
+
+  const rolldownInput = getRolldownInput(options, moduleCache);
   await using rolldownCompiler = await getRolldownInstance(rolldownInput);
   const rolldownOutput = await rolldownCompiler.generate();
   const chunk = rolldownOutput.output[0];
@@ -55,7 +73,11 @@ export async function compile(options: CompileOptions): Promise<CompileResult | 
  * The cache validates both the main file and all dependencies on each rebuild.
  */
 export function compileWatch(options: CompileOptions, watchOptions: WatchOptions): RolldownWatcher {
-  const rolldownInput = getRolldownInput(options);
+  // Initialize module cache if enabled
+  const moduleCacheEnabled = options.cache?.moduleCache !== false;
+  const moduleCache = moduleCacheEnabled ? new ModuleBuildCache(options.cache?.moduleCacheSize) : undefined;
+
+  const rolldownInput = getRolldownInput(options, moduleCache);
   const cacheEnabled = options.cache?.enabled !== false;
   const buildCache = cacheEnabled ? new BuildCache(options.cache?.maxSize) : undefined;
 

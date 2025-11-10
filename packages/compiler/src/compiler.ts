@@ -2,6 +2,7 @@ import type { InputOptions } from 'rolldown';
 import { rolldown } from 'rolldown';
 
 import type { CompileOptions, CompileResult } from '.';
+import type { ModuleBuildCache } from '#module-cache';
 
 export const SURIMI_CSS_EXPORT_NAME = '__SURIMI_GENERATED_CSS__';
 export const COMPILER_PLUGIN_NAME = 'surimi:compiler-transform';
@@ -13,7 +14,7 @@ interface SurimiModule extends Record<string, unknown> {
   [SURIMI_CSS_EXPORT_NAME]?: unknown;
 }
 
-export function getRolldownInput(options: CompileOptions) {
+export function getRolldownInput(options: CompileOptions, moduleCache?: ModuleBuildCache) {
   validateCompileOptions(options);
 
   const { inputPath, cwd, include, exclude } = options;
@@ -31,13 +32,28 @@ export function getRolldownInput(options: CompileOptions) {
               exclude,
             },
           },
-          handler(code) {
+          handler(code, id) {
+            // Check module cache if enabled
+            if (moduleCache) {
+              const cached = moduleCache.get(id, code);
+              if (cached) {
+                return cached;
+              }
+            }
+
+            // Transform the code
             const finalCode = `\
 import { Surimi as __surimi__instance__ } from 'surimi';
 __surimi__instance__.clear();
 ${code}
 export const ${SURIMI_CSS_EXPORT_NAME} = __surimi__instance__.build();
 `;
+
+            // Cache the transformed code
+            if (moduleCache) {
+              moduleCache.set(id, code, finalCode);
+            }
+
             return finalCode;
           },
         },
